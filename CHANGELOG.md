@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-07-08
+
+### Changed
+
+- README rewritten in a plainer voice; the intro now presents both install surfaces (on-demand skill and always-on `CLAUDE.md` policy) instead of describing the project as a skill only.
+
 ## [1.2.1] - 2026-07-08
 
 ### Fixed
@@ -57,7 +63,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.0.0...v1.1.0
