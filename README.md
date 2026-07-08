@@ -2,6 +2,10 @@
 
 Claude Code configuration and skills for getting more out of Fable 5 without burning Fable 5 on work better handled by cheaper agents.
 
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Fable 5 Optimizer terminal demo showing Claude Code skills and routing rules" width="720">
+</p>
+
 This repo packages a small Claude Code setup:
 
 - A project/user `CLAUDE.md` with model-routing rules for Fable 5, Opus 4.8, Sonnet 5, and Codex/GPT-5.5.
