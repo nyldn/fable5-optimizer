@@ -1,6 +1,6 @@
 ---
 name: fable5-optimizer
-version: 1.2.0
+version: 1.2.1
 description: Use when the user asks how to route work between Claude/Fable 5 and Codex/GPT-5.5, wants to optimize Fable 5 usage, or wants Claude Code to delegate bounded implementation, independent code review, data gathering, or runtime verification to Codex. Trigger on phrases like Fable 5 model routing, Codex delegation, GPT-5.5 review, should Claude or Codex handle this, use Codex to implement or review, or have Codex verify with browser/computer-use/screenshots. Do not use for ordinary implementation or review unless the user is deciding model ownership or asking to involve Codex. Do not use for generic prompt rewriting.
 ---
 
@@ -74,7 +74,7 @@ For a branch diff, use `codex review --base main > "$REPORT"`.
 Current Codex CLI versions do not accept custom instructions together with `--uncommitted` or `--base`. When the review needs a specific focus (a requirement to check, a suspected failure mode), run a read-only exec instead:
 
 ```bash
-codex exec -C "$PWD" --sandbox read-only -o "$REPORT" "Review the uncommitted changes for <focus>. Prioritize findings over summary: severity, file/line reference, concrete failure mode, suggested fix direction. Do not edit files. If there are no substantive findings, say so and name residual test gaps."
+codex exec -C "$PWD" --sandbox read-only -o "$REPORT" "Review <the uncommitted changes | the diff against <base>> for <focus>. Prioritize findings over summary: severity, file/line reference, concrete failure mode, suggested fix direction. Do not edit files. If there are no substantive findings, say so and name residual test gaps."
 ```
 
 After Codex returns:
