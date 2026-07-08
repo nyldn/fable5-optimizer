@@ -34,6 +34,9 @@ The setup in this repo teaches Claude Code to:
 ```text
 .claude/
   CLAUDE.md
+  settings.json
+  hooks/
+    codex-exec-guard.sh
   skills/
     codex-computer-use/
       SKILL.md
@@ -82,6 +85,19 @@ Routes local app verification through Codex when the work needs:
 
 It also records the important distinction that Anthropic's native computer-use tool is an API beta client tool, not something Claude Code should assume is locally available unless the runtime exposes it.
 
+### Codex Exec Guard
+
+Project installs include a small Claude Code `PreToolUse` hook:
+
+```text
+.claude/settings.json
+.claude/hooks/codex-exec-guard.sh
+```
+
+The guard blocks bare commands like `codex "review this"` because they open the interactive Codex TUI, which is the wrong execution path inside Claude Code Bash automation. It points the agent back to `codex exec --skip-git-repo-check "..."`, `codex review`, or the packaged `/codex-*` skills.
+
+If a project already has `.claude/settings.json`, the installer leaves it in place and writes `.claude/settings.fable5-optimizer.json` for manual merge.
+
 ## Requirements
 
 - Claude Code with skills support.
@@ -118,7 +134,7 @@ Install global skills plus an importable copy of the routing rules:
 curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user
 ```
 
-The project install backs up an existing `.claude/CLAUDE.md` before replacing it. Review the script before running it if you already have important project-specific Claude instructions.
+The project install backs up an existing `.claude/CLAUDE.md` before replacing it. If `.claude/settings.json` already exists, it is left in place and the hook settings are written to `.claude/settings.fable5-optimizer.json` for manual merge. Review the script before running it if you already have important project-specific Claude instructions.
 
 ### Project-Level Install
 
@@ -142,6 +158,8 @@ From a cloned copy of this repo, the same install is:
 ```bash
 ./install.sh
 ```
+
+For existing projects, prefer `./install.sh` over raw `rsync`; it avoids overwriting an existing `.claude/settings.json`.
 
 ### User-Level Install
 
@@ -215,6 +233,20 @@ The important habit is to ask: is this step about judgment and taste, or is it a
 This public repo intentionally contains only the reusable Claude Code configuration and skills.
 
 The working dropzone used to create it may contain private research material such as screenshots, transcripts, experiments, and notes. Those files are not part of the public release and should stay outside this repository.
+
+## Release Discipline
+
+Every behavior-changing release updates [VERSION](VERSION) and [CHANGELOG.md](CHANGELOG.md). Use semantic versioning:
+
+- Patch for docs, validation, or wording changes that do not alter installed behavior.
+- Minor for new skills, hooks, install modes, or backward-compatible routing changes.
+- Major for renamed skills, removed behavior, or install changes likely to break existing setups.
+
+Run the release gate before publishing:
+
+```bash
+make test
+```
 
 ## Contributing
 

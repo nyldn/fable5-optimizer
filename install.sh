@@ -31,6 +31,41 @@ copy_dir() {
   fi
 }
 
+backup_file() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    local backup="${file}.backup.$(date +%Y%m%d%H%M%S)"
+    cp -p "$file" "$backup"
+    echo "Backed up existing $(basename "$file") to $backup"
+  fi
+}
+
+replace_file() {
+  local src="$1"
+  local dest="$2"
+
+  mkdir -p "$(dirname "$dest")"
+  backup_file "$dest"
+  cp "$src" "$dest"
+}
+
+install_settings() {
+  local src="$1"
+  local dest="$2"
+
+  mkdir -p "$(dirname "$dest")"
+  if [[ -f "$dest" ]]; then
+    local example
+    example="$(dirname "$dest")/settings.fable5-optimizer.json"
+    cp "$src" "$example"
+    echo "Existing settings.json left in place. Wrote hook settings example to $example"
+    echo "Merge that PreToolUse entry if you want the Codex exec guard in this project."
+  else
+    cp "$src" "$dest"
+    echo "Installed Codex exec guard settings into $dest"
+  fi
+}
+
 script_dir=""
 script_source="${BASH_SOURCE[0]:-}"
 if [[ -n "$script_source" && -e "$script_source" ]]; then
@@ -52,13 +87,10 @@ case "$MODE" in
     DEST="$TARGET_DIR/.claude"
     echo "Installing Fable 5 Optimizer into $DEST"
 
-    if [[ -f "$DEST/CLAUDE.md" ]]; then
-      BACKUP="$DEST/CLAUDE.md.backup.$(date +%Y%m%d%H%M%S)"
-      cp -p "$DEST/CLAUDE.md" "$BACKUP"
-      echo "Backed up existing CLAUDE.md to $BACKUP"
-    fi
-
-    copy_dir "$SOURCE_DIR/.claude" "$DEST"
+    replace_file "$SOURCE_DIR/.claude/CLAUDE.md" "$DEST/CLAUDE.md"
+    copy_dir "$SOURCE_DIR/.claude/skills" "$DEST/skills"
+    copy_dir "$SOURCE_DIR/.claude/hooks" "$DEST/hooks"
+    install_settings "$SOURCE_DIR/.claude/settings.json" "$DEST/settings.json"
     echo "Done. Start Claude Code from this project with: claude"
     ;;
 

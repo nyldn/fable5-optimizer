@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import json
 import re
 import subprocess
 import sys
@@ -12,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 KEBAB_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+DATE_RE = re.compile(r"^## \[\d+\.\d+\.\d+\] - \d{4}-\d{2}-\d{2}$", re.MULTILINE)
 
 
 def fail(message: str, errors: list[str]) -> None:
@@ -90,6 +93,84 @@ def validate_installer(errors: list[str]) -> None:
         fail(f"install.sh has bash syntax errors:\n{result.stderr}", errors)
 
 
+def validate_metadata(errors: list[str]) -> None:
+    version_path = ROOT / "VERSION"
+    changelog_path = ROOT / "CHANGELOG.md"
+
+    if not version_path.is_file():
+        fail("VERSION is missing", errors)
+        return
+
+    version = read(version_path).strip()
+    if not SEMVER_RE.match(version):
+        fail(f"VERSION must be MAJOR.MINOR.PATCH, got: {version}", errors)
+
+    if not changelog_path.is_file():
+        fail("CHANGELOG.md is missing", errors)
+        return
+
+    changelog = read(changelog_path)
+    if "## [Unreleased]" not in changelog:
+        fail("CHANGELOG.md missing ## [Unreleased]", errors)
+    if f"## [{version}] -" not in changelog:
+        fail(f"CHANGELOG.md missing entry for VERSION {version}", errors)
+    if not DATE_RE.search(changelog):
+        fail("CHANGELOG.md missing dated release heading", errors)
+
+
+def validate_hooks(errors: list[str]) -> None:
+    settings = ROOT / ".claude" / "settings.json"
+    hook = ROOT / ".claude" / "hooks" / "codex-exec-guard.sh"
+
+    if not settings.is_file():
+        fail(".claude/settings.json is missing", errors)
+    else:
+        try:
+            data = json.loads(read(settings))
+        except json.JSONDecodeError as exc:
+            fail(f".claude/settings.json is invalid JSON: {exc}", errors)
+        else:
+            pre_tool = data.get("hooks", {}).get("PreToolUse", [])
+            commands = [
+                hook_def.get("command", "")
+                for entry in pre_tool
+                for hook_def in entry.get("hooks", [])
+            ]
+            if ".claude/hooks/codex-exec-guard.sh" not in commands:
+                fail(".claude/settings.json does not register codex-exec-guard.sh", errors)
+
+    if not hook.is_file():
+        fail(".claude/hooks/codex-exec-guard.sh is missing", errors)
+        return
+    if not os.access(hook, os.X_OK):
+        fail(".claude/hooks/codex-exec-guard.sh is not executable", errors)
+
+    result = run(["bash", "-n", str(hook)])
+    if result.returncode != 0:
+        fail(f"codex-exec-guard.sh has bash syntax errors:\n{result.stderr}", errors)
+        return
+
+    blocked = subprocess.run(
+        [str(hook)],
+        input=json.dumps({"tool_input": {"command": 'codex "review this"'}}),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if '"permissionDecision":"block"' not in blocked.stdout:
+        fail("codex-exec-guard.sh did not block bare codex prompt", errors)
+
+    allowed = subprocess.run(
+        [str(hook)],
+        input=json.dumps({"tool_input": {"command": 'codex exec --skip-git-repo-check "review this"'}}),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if allowed.stdout.strip() != '{"decision":"allow"}':
+        fail("codex-exec-guard.sh did not allow codex exec", errors)
+
+
 def validate_docs(errors: list[str]) -> None:
     readme = ROOT / "README.md"
     if not readme.is_file():
@@ -99,6 +180,9 @@ def validate_docs(errors: list[str]) -> None:
     text = read(readme)
     required_snippets = [
         "docs/assets/demo.gif",
+        "CHANGELOG.md",
+        "VERSION",
+        "codex-exec-guard",
         "curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash",
         "curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user-skills",
         "/codex-review",
@@ -150,6 +234,8 @@ def main() -> int:
 
     validate_skills(errors)
     validate_installer(errors)
+    validate_metadata(errors)
+    validate_hooks(errors)
     validate_docs(errors)
     validate_public_boundary(errors)
 
