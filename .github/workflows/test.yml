@@ -55,6 +55,8 @@ jobs:
               re.compile(r"(^|/)research/"),
               re.compile(r"(^|/)Docs/"),
               re.compile(r"(^|/)transcript\.md$"),
+              re.compile(r"(^|/)FABLE5_HANDOFF\.md$"),
+              re.compile(r"(^|/)internal-notes\.md$"),
               re.compile(r"(^|/)example-claude\.md$"),
               re.compile(r"(^|/)\.claude/"),
               re.compile(r"\.(png|jpe?g|webp|gif|mov|mp4)$", re.I),
@@ -73,3 +75,9 @@ jobs:
 
       - name: Test installer modes
         run: tests/install.sh
+
+      - name: Check instruction-surface sync anchors
+        run: tests/sync.sh
+
+      - name: Check Codex CLI template flags (skips without codex)
+        run: tests/codex-smoke.sh

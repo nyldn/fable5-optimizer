@@ -1,0 +1,57 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each release is tagged `vX.Y.Z` in git. The skill's frontmatter `version` field matches the latest release.
+
+## [Unreleased]
+
+## [1.2.0] - 2026-07-08
+
+### Added
+
+- Fable Preparedness Gate: three paths (active context, prepared context packet, quick checkpoint) with a compact packet field list and an anti-ceremony guard.
+- Routing Gate: routine-work row, plus risk signals that force Fable 5 judgment (API/schema contracts, security surfaces, release artifacts, user-facing UI, new modules, breaking changes).
+- Judgment-class rule: Codex agreement never settles architecture or taste decisions; route to Fable 5 when supervising cheaper output costs more than doing the work with Fable 5.
+- Codex Report Contract: one report shape (status, files, checks, evidence, blockers) shared by review, implementation, and runtime verification.
+- Fresh-context verifier briefing rule for Codex review: artifact and acceptance criteria only, never the maker's reasoning.
+- Anti-pattern list for Fable-directed and Codex-delegated prompts.
+- Checkpoint rule: pause only for destructive actions, real scope changes, or user-only input.
+- Always-on template additions mirroring the skill: assumptions, checkable acceptance criteria, preparedness rule, no-guessing rule, checkpoint rule.
+- `tests/sync.sh`: anchor sync check between the two instruction surfaces, wired into CI.
+- `tests/codex-smoke.sh`: probes installed Codex CLI for the flags used by the skill's command templates (skips when codex is absent), wired into CI.
+- `tests/trigger-cases.md`: manual trigger evaluation cases for the skill description.
+- README install-mode chooser table.
+
+### Fixed
+
+- `codex review` command templates: Codex CLI 0.143.0 rejects a custom prompt combined with `--uncommitted`/`--base`; templates now use the plain form, with a read-only `codex exec` variant for focused reviews.
+
+### Removed
+
+- Internal review handoff prompt and internal maintainer notes moved out of the public repo; CI now blocks them from returning.
+
+## [1.1.0] - 2026-07-08
+
+### Added
+
+- Always-on install surface: `claude-md/CLAUDE.md` template installed as a managed block into a project's `.claude/CLAUDE.md` via `install.sh claude-md` (idempotent, with backups).
+- `tests/install.sh` covering the `skill`, `skill-project`, and `claude-md` install modes, wired into CI.
+- Repo `CLAUDE.md` documenting the two-surface sync rule.
+
+### Changed
+
+- Tightened the skill trigger description: explicit trigger phrases plus negative triggers for ordinary implementation or review.
+
+## [1.0.0] - 2026-07-08
+
+### Added
+
+- Initial public release: single `fable5-optimizer` skill routing work between Claude/Fable 5 and Codex/GPT-5.5, with review, implementation, and runtime verification command templates.
+- One-shot installer (`install.sh`) with user and project modes.
+- CI validation of the skill package and public boundary.
+
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/nyldn/fable5-optimizer/releases/tag/v1.0.0

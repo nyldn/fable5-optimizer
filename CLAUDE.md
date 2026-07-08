@@ -13,6 +13,8 @@ Before release, run:
 
 ```bash
 tests/install.sh
+tests/sync.sh
+tests/codex-smoke.sh
 ruby -ryaml -e 'ARGV.each { |path| text = File.read(path); m = text.match(/\A---\n(.*?)\n---\n/m) or abort("missing frontmatter: #{path}"); data = YAML.safe_load(m[1]); abort("missing name: #{path}") unless data["name"]; abort("missing description: #{path}") unless data["description"]; puts "ok #{path}: #{data["name"]}" }' skills/*/SKILL.md
 git diff --check
 ```

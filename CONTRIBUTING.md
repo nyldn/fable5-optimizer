@@ -33,6 +33,16 @@ When a change affects routing guidance, delegation boundaries, verification requ
 - Confirm no research/dropzone material was added.
 - Confirm no credentials, tokens, private URLs, or account-specific secrets were added.
 
+## Releases
+
+Every release is versioned:
+
+1. Move the `[Unreleased]` items in `CHANGELOG.md` into a new `[X.Y.Z] - YYYY-MM-DD` section and update the compare links.
+2. Set the same version in the `version` field of `skills/fable5-optimizer/SKILL.md`.
+3. Tag the release commit `vX.Y.Z` and push the tag.
+
+Semantic versioning: major for breaking install/behavior changes, minor for new guidance or install surfaces, patch for fixes and wording.
+
 ## Local Validation
 
 From the repo root:
@@ -40,6 +50,8 @@ From the repo root:
 ```bash
 ruby -ryaml -e 'ARGV.each { |path| text = File.read(path); m = text.match(/\A---\n(.*?)\n---\n/m) or abort("missing frontmatter: #{path}"); data = YAML.safe_load(m[1]); abort("missing name: #{path}") unless data["name"]; abort("missing description: #{path}") unless data["description"]; puts "ok #{path}: #{data["name"]}" }' skills/*/SKILL.md
 tests/install.sh
+tests/sync.sh
+tests/codex-smoke.sh
 git diff --check
 ```
 

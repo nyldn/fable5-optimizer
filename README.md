@@ -1,6 +1,6 @@
 # Fable 5 Optimizer
 
-A Claude Code skill for deciding when Fable 5 should steer the work and when Codex should handle bounded execution, review, or runtime verification.
+A Claude Code skill for deciding when Fable 5 should steer the work and when Codex/GPT-5.5 should handle bounded execution, independent review, or runtime verification.
 
 Use it when you want Claude Code to:
 
@@ -8,21 +8,30 @@ Use it when you want Claude Code to:
 - delegate bounded implementation, review, data gathering, or runtime checks to Codex/GPT-5.5
 - bring back concrete evidence before reporting that work is complete
 
+## What The Skill Adds
+
+- A routing gate: which model owns which work, plus risk signals (API contracts, security surfaces, UI, breaking changes) that always go to Fable 5.
+- A preparedness gate: when to have Codex assemble a context packet so Fable 5 starts with judgment instead of state reconstruction.
+- Ready-to-run `codex` command templates for review, bounded implementation, and browser/computer-use verification, all reporting against one evidence contract.
+- Guardrails: checkable acceptance criteria before delegating, fresh-context review briefs, and a checkpoint rule for autonomous runs.
+
 ## Install
 
-Choose one install mode.
+Choose one install mode:
+
+| Mode | Choose this if |
+|---|---|
+| On-demand skill (default) | You want `/fable5-optimizer` loaded only when a task is about Fable 5/Codex routing. Installs per user, works across all projects. |
+| Project-local skill | Same as above, but scoped to one project's `.claude/skills/`. |
+| Always-on `CLAUDE.md` | You want the routing policy active in every session of one project, even when the skill would not auto-trigger. Costs a small amount of always-loaded context. |
 
 ### On-Demand Skill
-
-Use this when you want `/fable5-optimizer` available as a skill that Claude Code can load when the task is about Fable 5/Codex routing.
 
 The easiest path is to ask Claude Code to install the skill directly:
 
 ```text
 install this skill https://github.com/nyldn/fable5-optimizer
 ```
-
-You can also install it from the shell.
 
 Shell install:
 
@@ -46,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install
 
 ### Always-On CLAUDE.md
 
-Use this when you want the Fable 5/Codex routing policy active for every Claude Code session in a project, even when the skill does not auto-trigger. Run it from the project root:
+Run from the project root:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- claude-md
@@ -58,7 +67,7 @@ From a cloned copy:
 ./install.sh claude-md
 ```
 
-The always-on install writes a managed block to `.claude/CLAUDE.md` in the current project. If that file already exists, it is backed up first; re-running the installer replaces the existing `fable5-optimizer` block instead of duplicating it.
+This writes a managed block to `.claude/CLAUDE.md` in the current project. If that file already exists, it is backed up first; re-running the installer replaces the existing `fable5-optimizer` block instead of duplicating it.
 
 ## Usage
 
@@ -84,13 +93,9 @@ claude --version
 codex --version
 ```
 
-## Public Boundary
+## Versioning
 
-Keep raw research notes, transcripts, screenshots, experiments, personal Claude preferences, project settings, hooks, generated demo media, and private model-cost assumptions outside this repo.
-
-## Fable 5 Review Handoff
-
-Use [FABLE5_HANDOFF.md](FABLE5_HANDOFF.md) as a paste-ready prompt when asking Fable 5 to review this repo and suggest or make focused improvements.
+Releases follow semantic versioning and are tagged `vX.Y.Z`. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
