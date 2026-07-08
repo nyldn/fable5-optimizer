@@ -65,6 +65,10 @@ codex --version
 
 This repository is the public release surface only. Keep raw research notes, transcripts, screenshots, experiments, and personal model-cost assumptions outside the repo.
 
+## Fable 5 Review Handoff
+
+Use [FABLE5_HANDOFF.md](FABLE5_HANDOFF.md) as a paste-ready prompt when asking Fable 5 to review this repo and suggest or make focused improvements.
+
 ## Contributing
 
 Keep changes focused on the skill itself. If a new behavior needs helper files, put them under `skills/fable5-optimizer/` and reference them from `SKILL.md` so Claude knows when to use them.
