@@ -6,14 +6,16 @@ This repo is intentionally small. It should stay focused on the `fable5-optimize
 
 ## Instruction Surfaces
 
-Keep these semantically in sync:
+Two install surfaces, one source of truth:
 
-- `skills/fable5-optimizer/SKILL.md` for on-demand skill usage.
-- `claude-md/CLAUDE.md` for always-on project instructions.
+- `skills/fable5-optimizer/SKILL.md` is the source. Edit this.
+- `claude-md/CLAUDE.md` is generated from the skill body by `install.sh`. Never hand-edit it; regenerate after any skill change:
 
-The skill can include detailed command templates and execution workflow. The `CLAUDE.md` template must work standalone: a project that installs only the template gets the full routing policy plus the Codex command mechanics needed to act on it. Keep it lean because it lives in always-loaded project memory, but self-sufficiency wins over brevity.
+```bash
+./install.sh claude-md-print > claude-md/CLAUDE.md
+```
 
-When a change affects routing guidance, delegation boundaries, verification requirements, install behavior, or release docs, update both instruction surfaces or explain why only one changed.
+`tests/sync.sh` fails if the generated file is stale. Because the same body serves both surfaces, write it surface-neutral: no "this skill" phrasing, no assumptions that the reader invoked it on demand.
 
 ## What Makes a Good Change
 
@@ -27,7 +29,7 @@ When a change affects routing guidance, delegation boundaries, verification requ
 
 - Explain the problem the change solves.
 - Keep changes scoped to one behavior or documentation improvement.
-- Confirm the skill and `CLAUDE.md` template are still semantically aligned.
+- Regenerate `claude-md/CLAUDE.md` if `SKILL.md` changed (`tests/sync.sh` checks this).
 - Validate YAML frontmatter in every changed `SKILL.md`.
 - Run `tests/install.sh` if install behavior, target paths, README install commands, or `claude-md/CLAUDE.md` changed.
 - Confirm no research/dropzone material was added.

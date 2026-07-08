@@ -5,9 +5,13 @@ This repo has two public instruction surfaces:
 - On-demand skill: `skills/fable5-optimizer/SKILL.md`
 - Always-on project policy template: `claude-md/CLAUDE.md`
 
-Keep those surfaces semantically in sync. The skill may contain detailed command templates and delegation workflows. The `CLAUDE.md` template must be standalone and complete: a project with only the template installed (no skill) gets the full routing policy and the Codex command mechanics. Keep it lean because it is loaded in every project session, but never at the cost of self-sufficiency.
+The skill body is the single source of truth. `claude-md/CLAUDE.md` is generated from it: never hand-edit that file. After changing `SKILL.md`, regenerate with:
 
-When changing routing guidance, delegation boundaries, verification requirements, install behavior, or release docs, update both surfaces or explicitly note why only one surface changed. Also update `README.md`, `install.sh`, and tests when install modes or target paths change.
+```bash
+./install.sh claude-md-print > claude-md/CLAUDE.md
+```
+
+`tests/sync.sh` fails CI if the generated file is stale. Write the skill body so it reads correctly on both surfaces (avoid "this skill" phrasing). Update `README.md`, `install.sh`, and tests when install modes or target paths change.
 
 Before release, run:
 

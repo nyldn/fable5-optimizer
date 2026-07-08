@@ -63,7 +63,7 @@ Or from a cloned copy:
 ./install.sh claude-md
 ```
 
-This writes a managed block to `.claude/CLAUDE.md` in the current project. If the file already exists it is backed up first, and re-running the installer replaces the block instead of stacking duplicates.
+This writes a managed block to `.claude/CLAUDE.md` in the current project. The block is generated from the skill body at install time, so it carries the complete guidance (routing, command templates, report contract), not a summary. If the file already exists it is backed up first, and re-running the installer replaces the block instead of stacking duplicates.
 
 ## Usage examples
 

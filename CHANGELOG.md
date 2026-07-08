@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-08
+
+### Changed
+
+- The always-on `CLAUDE.md` block is now generated from the skill body by `install.sh`, so an independent `claude-md` install carries the complete guidance (routing gate, effort discipline, preparedness gate, command templates, report contract, workflow wrapper pattern) instead of a hand-maintained subset.
+- `claude-md/CLAUDE.md` in the repo is a generated artifact; `install.sh claude-md-print` regenerates it and `tests/sync.sh` now fails on any drift from the skill body, replacing the weaker anchor-only check.
+- Skill body wording made surface-neutral so it reads correctly in both installs.
+
 ## [1.4.0] - 2026-07-08
 
 ### Added
@@ -86,7 +94,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.1...v1.2.2
