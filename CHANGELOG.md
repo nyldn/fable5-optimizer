@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-07-08
+
+### Fixed
+
+- Skill trigger description restructured after a live headless test showed advisory phrasing ("should Claude or Codex handle reviewing this branch diff") failing to load the skill. The description now leads with a load-before-answering rule for any mention of Codex, GPT-5.5, or model-ownership questions, and names advisory question shapes explicitly. Both probe phrasings now trigger, including one with no model names at all.
+
 ## [1.5.0] - 2026-07-08
 
 ### Changed
@@ -94,7 +100,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...v1.3.0
