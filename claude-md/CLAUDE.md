@@ -22,6 +22,7 @@ Route by the bottleneck:
 | Independent code review of a diff, branch, commit, or implementation | Codex, then Claude verifies findings |
 | Browser/app/simulator verification, screenshots, runtime UI checks | Codex if it has suitable local automation tools |
 | Routine lookups, small rewrites, single-file fixes | Whichever is already in context; a cheaper model is often the right answer |
+| Cheap in-harness Claude subagent duty: Codex wrapper agents, structured summaries, glue between workflow stages | Sonnet 5 at low effort; for longer outputs Opus 4.8 is often cheaper because Sonnet 5 is token-hungry |
 
 Escalate to Fable 5 judgment, regardless of the table, when the change touches a risk surface: API or schema contracts, security-sensitive code or CI configuration, release artifacts, user-facing UI, a new module, or a breaking change.
 
@@ -140,7 +141,7 @@ Read the report and inspect screenshots or logs before summarizing. For visual c
 
 Workflow and subagent model parameters only take Claude models, so reach Codex through a wrapper:
 
-- Spawn a thin Claude wrapper agent on a cheap model at low effort whose prompt writes a self-contained Codex prompt, runs `codex exec` via Bash, and returns the report (use structured output on the wrapper when the caller needs fields).
+- Spawn a thin Claude wrapper agent (Sonnet 5 at low effort works well) whose prompt writes a self-contained Codex prompt, runs `codex exec` via Bash, and returns the report (use structured output on the wrapper when the caller needs fields).
 - Label these agents with a `gpt-5.5` prefix (for example `gpt-5.5:review-auth`); the UI shows the wrapper's Claude model, so the label is the only sign the real worker is Codex.
 - Codex runs can outlive the shell timeout: pass an explicit timeout, or run in the background and poll for the report file.
 - Parallel Codex implementation agents need worktree isolation so their edits do not collide in a shared checkout.

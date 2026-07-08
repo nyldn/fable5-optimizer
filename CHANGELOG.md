@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-07-08
+
+### Added
+
+- Routing row for Sonnet 5: cheap in-harness Claude subagent duty (Codex wrapper agents, structured summaries, workflow glue) at low effort, with the source's caveat that Opus 4.8 is often cheaper for longer outputs because Sonnet 5 is token-hungry. The workflow wrapper pattern now names Sonnet 5 explicitly. This is the only work type the source material assigns Sonnet 5.
+
 ## [1.5.1] - 2026-07-08
 
 ### Fixed
@@ -100,7 +106,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...v1.4.0
