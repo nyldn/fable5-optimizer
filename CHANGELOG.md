@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-08
+
+### Changed
+
+- The always-on `CLAUDE.md` template is now standalone and complete: it carries the full routing policy plus the Codex command mechanics (noninteractive `codex exec`, review commands, read-only runs, report contract), so a project with only the template installed can act on the policy without the skill. Previously it was a summary that assumed the skill was present.
+- Contributor docs updated: the template's rule is now "standalone first, lean second" instead of "keep it short".
+
 ## [1.2.2] - 2026-07-08
 
 ### Changed
@@ -63,7 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.1.0...v1.2.0

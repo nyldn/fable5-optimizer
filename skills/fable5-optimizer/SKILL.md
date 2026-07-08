@@ -1,6 +1,6 @@
 ---
 name: fable5-optimizer
-version: 1.2.2
+version: 1.3.0
 description: Use when the user asks how to route work between Claude/Fable 5 and Codex/GPT-5.5, wants to optimize Fable 5 usage, or wants Claude Code to delegate bounded implementation, independent code review, data gathering, or runtime verification to Codex. Trigger on phrases like Fable 5 model routing, Codex delegation, GPT-5.5 review, should Claude or Codex handle this, use Codex to implement or review, or have Codex verify with browser/computer-use/screenshots. Do not use for ordinary implementation or review unless the user is deciding model ownership or asking to involve Codex. Do not use for generic prompt rewriting.
 ---
 

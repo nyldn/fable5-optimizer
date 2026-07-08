@@ -11,7 +11,7 @@ Keep these semantically in sync:
 - `skills/fable5-optimizer/SKILL.md` for on-demand skill usage.
 - `claude-md/CLAUDE.md` for always-on project instructions.
 
-The skill can include detailed command templates and execution workflow. The `CLAUDE.md` template should stay short because users install it into always-loaded project memory.
+The skill can include detailed command templates and execution workflow. The `CLAUDE.md` template must work standalone: a project that installs only the template gets the full routing policy plus the Codex command mechanics needed to act on it. Keep it lean because it lives in always-loaded project memory, but self-sufficiency wins over brevity.
 
 When a change affects routing guidance, delegation boundaries, verification requirements, install behavior, or release docs, update both instruction surfaces or explain why only one changed.
 

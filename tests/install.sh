@@ -21,7 +21,7 @@ printf '# Project Instructions\n\nKeep this project-specific note.\n' > "$PROJEC
 FABLE5_OPTIMIZER_TARGET="$PROJECT_DIR" "$ROOT/install.sh" claude-md
 test -f "$PROJECT_DIR/.claude/CLAUDE.md"
 grep -q "Keep this project-specific note." "$PROJECT_DIR/.claude/CLAUDE.md"
-grep -q "## Fable 5 Optimizer" "$PROJECT_DIR/.claude/CLAUDE.md"
+grep -q "## Fable 5 / Codex routing policy" "$PROJECT_DIR/.claude/CLAUDE.md"
 grep -q "fable5-optimizer:start" "$PROJECT_DIR/.claude/CLAUDE.md"
 
 FABLE5_OPTIMIZER_TARGET="$PROJECT_DIR" "$ROOT/install.sh" claude-md
