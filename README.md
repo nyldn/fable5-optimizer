@@ -1,109 +1,58 @@
 # Fable 5 Optimizer
 
-Claude Code configuration and skills for getting more out of Fable 5 without burning Fable 5 on work better handled by cheaper agents.
+A single Claude Code skill for deciding when Fable 5 should steer the work and when Codex should handle bounded execution, review, or runtime verification.
 
-<p align="center">
-  <img src="docs/assets/demo.gif" alt="Fable 5 Optimizer terminal demo showing Claude Code skills and routing rules" width="720">
-</p>
+This repository is intentionally small. It follows the same basic shape as Anthropic skill releases: a `skills/<skill-name>/SKILL.md` folder, optional support files only when needed, and a short README.
 
-This repo packages a small Claude Code setup:
+## Install
 
-- A project/user `CLAUDE.md` with model-routing rules for Fable 5, Opus 4.8, Sonnet 5, and Codex/GPT-5.5.
-- A `codex-review` skill for independent second-pass review.
-- A `codex-implementation` skill for bounded mechanical implementation work.
-- A `codex-computer-use` skill for runtime verification, browser automation, screenshots, simulators, and desktop/app inspection through Codex.
+Install globally for Claude Code:
 
-The core idea is simple: let Fable 5 steer the work, make taste-heavy and ambiguous calls, and review important plans. Route token-heavy, mechanical, or computer-use work through Codex when that is the better tool.
-
-## Why This Exists
-
-Fable 5 is strongest when it is treated as an orchestrator and judgment model, not just a drop-in replacement for older Claude workflows.
-
-The setup in this repo teaches Claude Code to:
-
-- Use Fable 5 on `high` effort by default.
-- Avoid `xhigh`, `max`, and Ultra Code unless there is a specific reason.
-- Treat cost as a planning input, not a quality ceiling.
-- Use Codex/GPT-5.5 for cheap, long-running, token-heavy work.
-- Use Fable 5 or Opus 4.8 for user-facing UI, API design, copy, and final judgment.
-- Keep Codex prompts short and task-specific instead of prompting Codex like Claude.
-- Verify Codex findings before reporting them as true.
-
-## What Is Included
-
-```text
-.claude/
-  CLAUDE.md
-  settings.json
-  hooks/
-    codex-exec-guard.sh
-  skills/
-    codex-computer-use/
-      SKILL.md
-    codex-implementation/
-      SKILL.md
-    codex-review/
-      SKILL.md
+```bash
+curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash
 ```
 
-### `CLAUDE.md`
+Install into the current project only:
 
-Sets the default working preferences and model-routing rubric:
-
-- Fable 5 defaults to `high` effort.
-- Codex/GPT-5.5 is preferred for bulk mechanical work, migrations, data analysis, log digging, and runtime verification.
-- Taste-heavy work stays with Fable 5 or Opus 4.8.
-- Reviews of plans and implementations should use Fable 5 or Opus 4.8, optionally with Codex as an independent extra perspective.
-
-### `codex-review`
-
-Runs Codex as an independent reviewer for:
-
-- uncommitted changes
-- branch diffs
-- commits
-- specific implementations
-
-The skill tells Claude to verify Codex findings against the code before relaying them.
-
-### `codex-implementation`
-
-Uses Codex for bounded, clear-spec implementation work where the task is mechanical enough that taste and architecture judgment are not the bottleneck.
-
-It is intentionally guarded: Claude still owns the plan, reviews the diff, and reports verification.
-
-### `codex-computer-use`
-
-Routes local app verification through Codex when the work needs:
-
-- browser automation
-- screenshots
-- simulators
-- desktop app inspection
-- runtime UI checks
-- long visual verification loops
-
-It also records the important distinction that Anthropic's native computer-use tool is an API beta client tool, not something Claude Code should assume is locally available unless the runtime exposes it.
-
-### Codex Exec Guard
-
-Project installs include a small Claude Code `PreToolUse` hook:
-
-```text
-.claude/settings.json
-.claude/hooks/codex-exec-guard.sh
+```bash
+curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- project
 ```
 
-The guard blocks bare commands like `codex "review this"` because they open the interactive Codex TUI, which is the wrong execution path inside Claude Code Bash automation. It points the agent back to `codex exec --skip-git-repo-check "..."`, `codex review`, or the packaged `/codex-*` skills.
+From a cloned copy:
 
-If a project already has `.claude/settings.json`, the installer leaves it in place and writes `.claude/settings.fable5-optimizer.json` for manual merge.
+```bash
+./install.sh
+./install.sh project
+```
+
+The global install writes to `~/.claude/skills/fable5-optimizer`. The project install writes to `.claude/skills/fable5-optimizer` in the current directory. Existing skill folders are backed up before replacement.
+
+## Usage
+
+Invoke directly:
+
+```text
+/fable5-optimizer plan this change, then use Codex for an independent review
+/fable5-optimizer use Codex to implement this bounded migration and verify the diff
+/fable5-optimizer verify the running checkout flow with browser automation and screenshots
+```
+
+Claude Code can also load the skill automatically when the request is about Fable 5 model routing, Codex delegation, GPT-5.5 review, or computer-use verification.
+
+## Included Files
+
+```text
+skills/
+  fable5-optimizer/
+    SKILL.md
+```
+
+The public repo does not include private research, screenshots, transcripts, personal Claude preferences, project-level `.claude/settings.json`, hooks, or generated demo media.
 
 ## Requirements
 
 - Claude Code with skills support.
-- Codex CLI installed and authenticated.
-- A Codex configuration that routes to your intended GPT-5.5 model, or explicit `codex` command flags for your environment.
-- Git.
+- Codex CLI installed and authenticated if you want the Codex delegation parts to run.
 
 Check local tools:
 
@@ -112,147 +61,15 @@ claude --version
 codex --version
 ```
 
-## Install
+## Public Boundary
 
-### One-Shot Install
-
-Install the full optimizer into the current project:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash
-```
-
-Install only the skills globally:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user-skills
-```
-
-Install global skills plus an importable copy of the routing rules:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user
-```
-
-The project install backs up an existing `.claude/CLAUDE.md` before replacing it. If `.claude/settings.json` already exists, it is left in place and the hook settings are written to `.claude/settings.fable5-optimizer.json` for manual merge. Review the script before running it if you already have important project-specific Claude instructions.
-
-### Project-Level Install
-
-Use this when you want the optimizer to apply to one repository.
-
-```bash
-git clone https://github.com/nyldn/fable5-optimizer.git
-cd fable5-optimizer
-rsync -av .claude/ /path/to/your-project/.claude/
-```
-
-Then start Claude Code from that project:
-
-```bash
-cd /path/to/your-project
-claude
-```
-
-From a cloned copy of this repo, the same install is:
-
-```bash
-./install.sh
-```
-
-For existing projects, prefer `./install.sh` over raw `rsync`; it avoids overwriting an existing `.claude/settings.json`.
-
-### User-Level Install
-
-Use this when you want the skills available across projects.
-
-```bash
-git clone https://github.com/nyldn/fable5-optimizer.git ~/.claude/fable5-optimizer
-mkdir -p ~/.claude/skills
-rsync -av ~/.claude/fable5-optimizer/.claude/skills/ ~/.claude/skills/
-```
-
-From a cloned copy of this repo:
-
-```bash
-./install.sh user-skills
-```
-
-For the routing rules, either merge the relevant parts of `.claude/CLAUDE.md` into your existing `~/.claude/CLAUDE.md`, or import it from your user-level file with an absolute path:
-
-```md
-@/Users/you/.claude/fable5-optimizer/.claude/CLAUDE.md
-```
-
-Do not blindly overwrite an existing `~/.claude/CLAUDE.md`; it likely contains your own preferences.
-
-## Usage
-
-Claude Code should load these automatically when they are relevant. You can also invoke the skills directly:
-
-```text
-/codex-review review the current uncommitted changes
-/codex-implementation implement the bounded migration described in docs/plan.md
-/codex-computer-use verify the checkout flow in the running app
-```
-
-Good requests are explicit about the target and evidence expected:
-
-```text
-Use Fable 5 to plan this change, then use Codex for a second-pass review of the branch diff before summarizing what is safe to merge.
-```
-
-```text
-Verify the settings page in the running app. I care about the save flow, validation errors, and whether the confirmation toast appears. Use screenshots as evidence.
-```
-
-## Operating Model
-
-Use this as a starting rubric, not a law:
-
-| Work type | Default route |
-|---|---|
-| Ambiguous architecture or product judgment | Fable 5 |
-| UI, copy, API design, SDK surface | Fable 5 or Opus 4.8 |
-| Final plan/implementation review | Fable 5 or Opus 4.8, optionally Codex |
-| Clear mechanical implementation | Codex/GPT-5.5 |
-| Migrations, log digging, large-file review, data analysis | Codex/GPT-5.5 |
-| Browser/app/simulator verification | Codex/GPT-5.5 through `codex-computer-use` |
-
-The important habit is to ask: is this step about judgment and taste, or is it about cheap execution and evidence gathering?
-
-## Safety Notes
-
-- Review these files before installing. They encode one workflow and one set of preferences.
-- Do not publish secrets in `CLAUDE.md`, skill files, prompts, screenshots, or reports.
-- Keep computer-use tasks away from purchases, account changes, destructive actions, and terms acceptance unless a human explicitly confirms the action.
-- Treat Codex output as evidence, not authority. Verify important claims.
-- Keep public releases separate from research notes, transcripts, screenshots, and raw source material.
-
-## Public Release Boundary
-
-This public repo intentionally contains only the reusable Claude Code configuration and skills.
-
-The working dropzone used to create it may contain private research material such as screenshots, transcripts, experiments, and notes. Those files are not part of the public release and should stay outside this repository.
-
-## Release Discipline
-
-Every behavior-changing release updates [VERSION](VERSION) and [CHANGELOG.md](CHANGELOG.md). Use semantic versioning:
-
-- Patch for docs, validation, or wording changes that do not alter installed behavior.
-- Minor for new skills, hooks, install modes, or backward-compatible routing changes.
-- Major for renamed skills, removed behavior, or install changes likely to break existing setups.
-
-Run the release gate before publishing:
-
-```bash
-make test
-```
+This repository is the public release surface only. Keep raw research notes, transcripts, screenshots, experiments, and personal model-cost assumptions outside the repo.
 
 ## Contributing
 
-Improvements are welcome. Keep changes small, practical, and grounded in real usage. If a change adds a new routing rule or skill behavior, include the problem it solves and the failure mode it prevents.
+Keep changes focused on the skill itself. If a new behavior needs helper files, put them under `skills/fable5-optimizer/` and reference them from `SKILL.md` so Claude knows when to use them.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

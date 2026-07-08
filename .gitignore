@@ -23,8 +23,3 @@ Docs/
 *.mp4
 transcript.md
 example-claude.md
-
-!docs/
-!docs/assets/
-!docs/assets/demo.gif
-!docs/assets/demo.tape

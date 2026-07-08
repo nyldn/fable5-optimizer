@@ -23,13 +23,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Validate release package
-        run: make test
-
-      - name: Validate VHS tape syntax when available
+      - name: Validate skill package
         run: |
-          if command -v vhs >/dev/null 2>&1; then
-            vhs validate docs/assets/demo.tape
-          else
-            echo "vhs not installed; skipping tape parser validation"
-          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          root = Path(".")
+          skill = root / "skills" / "fable5-optimizer" / "SKILL.md"
+          errors = []
+
+          if not skill.is_file():
+              errors.append("skills/fable5-optimizer/SKILL.md is missing")
+          else:
+              text = skill.read_text(encoding="utf-8")
+              if not text.startswith("---\n"):
+                  errors.append("SKILL.md missing YAML frontmatter")
+              elif "\n---\n" not in text[4:]:
+                  errors.append("SKILL.md missing closing frontmatter")
+              if "name: fable5-optimizer" not in text:
+                  errors.append("SKILL.md missing expected name")
+              if "description:" not in text:
+                  errors.append("SKILL.md missing description")
+
+          tracked = [
+              p for p in root.rglob("*")
+              if p.is_file() and ".git" not in p.parts
+          ]
+          blocked = [
+              re.compile(r"(^|/)research/"),
+              re.compile(r"(^|/)Docs/"),
+              re.compile(r"(^|/)transcript\.md$"),
+              re.compile(r"(^|/)example-claude\.md$"),
+              re.compile(r"(^|/)\.claude/"),
+              re.compile(r"\.(png|jpe?g|webp|gif|mov|mp4)$", re.I),
+          ]
+          for path in tracked:
+              rel = path.as_posix()
+              if any(pattern.search(rel) for pattern in blocked):
+                  errors.append(f"public package contains blocked file: {rel}")
+
+          if errors:
+              for error in errors:
+                  print(error, file=sys.stderr)
+              sys.exit(1)
+          print("OK: skill package validated")
+          PY

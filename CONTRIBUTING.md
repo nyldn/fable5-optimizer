@@ -2,13 +2,13 @@
 
 Thanks for improving Fable 5 Optimizer.
 
-This repo is intentionally small. It should stay focused on reusable Claude Code configuration and skills that improve Fable 5 workflows.
+This repo is intentionally small. It should stay focused on the `fable5-optimizer` skill.
 
 ## What Makes a Good Change
 
 - It solves a real failure mode from agent work.
 - It keeps prompts and skill bodies short.
-- It improves routing between Fable 5, Opus, Sonnet, and Codex without adding unnecessary ceremony.
+- It improves routing between Fable 5, Claude, and Codex without adding unnecessary ceremony.
 - It avoids personal secrets, private paths, unpublished research, and raw screenshots/transcripts.
 - It is easy for someone to adapt rather than blindly copy.
 
@@ -17,7 +17,6 @@ This repo is intentionally small. It should stay focused on reusable Claude Code
 - Explain the problem the change solves.
 - Keep changes scoped to one behavior or documentation improvement.
 - Validate YAML frontmatter in every changed `SKILL.md`.
-- Update `VERSION` and `CHANGELOG.md` for behavior-changing releases.
 - Confirm no research/dropzone material was added.
 - Confirm no credentials, tokens, private URLs, or account-specific secrets were added.
 
@@ -26,13 +25,7 @@ This repo is intentionally small. It should stay focused on reusable Claude Code
 From the repo root:
 
 ```bash
-ruby -ryaml -e 'ARGV.each { |path| text = File.read(path); m = text.match(/\A---\n(.*?)\n---\n/m) or abort("missing frontmatter: #{path}"); data = YAML.safe_load(m[1]); abort("missing name: #{path}") unless data["name"]; abort("missing description: #{path}") unless data["description"]; puts "ok #{path}: #{data["name"]}" }' .claude/skills/*/SKILL.md
+ruby -ryaml -e 'ARGV.each { |path| text = File.read(path); m = text.match(/\A---\n(.*?)\n---\n/m) or abort("missing frontmatter: #{path}"); data = YAML.safe_load(m[1]); abort("missing name: #{path}") unless data["name"]; abort("missing description: #{path}") unless data["description"]; puts "ok #{path}: #{data["name"]}" }' skills/*/SKILL.md
 ```
 
-Run the release validator:
-
-```bash
-make test
-```
-
-Also read the changed skill or hook as if you were Claude Code. Skill descriptions should contain the trigger conditions; hook behavior should be narrow, fast, and easy to opt out of by editing `.claude/settings.json`.
+Also read the changed skill as if you were Claude Code. The description should contain the trigger conditions, and the body should contain only instructions needed after the skill is selected.
