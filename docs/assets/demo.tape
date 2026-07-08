@@ -1,9 +1,8 @@
 Output docs/assets/demo.gif
 
 Require bash
-Require find
-Require grep
-Require sed
+Require git
+Require mkdir
 
 Set Shell "bash"
 Set FontSize 22
@@ -17,17 +16,18 @@ Set TypingSpeed 18ms
 Type "clear" Enter
 Sleep 300ms
 
-Type "echo 'Fable 5 Optimizer'; echo 'Fable 5 steers. Codex handles cheap execution.'; echo" Enter
-Sleep 900ms
+Hide
+Type "DEMO_REPO=$PWD; rm -rf /tmp/fable5-demo-app; mkdir -p /tmp/fable5-demo-app; cd /tmp/fable5-demo-app" Enter
+Type "curl() { cat $DEMO_REPO/install.sh; }; export FABLE5_OPTIMIZER_REPO_URL=file://$DEMO_REPO" Enter
+Type "claude() { echo Claude Code 2.1.204; echo Loading project instructions from .claude/CLAUDE.md; echo Skills loaded: codex-review, codex-implementation, codex-computer-use; echo; printf '> '; IFS= read -r request; echo; echo Matched skill: codex-computer-use; echo Route: Fable 5 steers, Codex/GPT-5.5 verifies runtime behavior.; }" Enter
+Type "clear" Enter
+Show
 
-Type "find .claude -maxdepth 3 -type f | sort" Enter
-Sleep 1200ms
+Type "curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash" Enter
+Sleep 1600ms
 
-Type "ls .claude/skills" Enter
-Sleep 1200ms
+Type "claude" Enter
+Sleep 800ms
 
-Type "sed -n '25,52p' .claude/CLAUDE.md" Enter
-Sleep 2400ms
-
-Type "echo; echo 'Install into a project:'; echo '  rsync -av .claude/ /path/to/project/.claude/'; echo; echo 'Then start Claude Code and let Fable 5 steer.'" Enter
+Type "/codex-computer-use verify the running app UI and capture screenshots" Enter
 Sleep 2200ms

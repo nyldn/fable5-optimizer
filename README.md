@@ -98,6 +98,28 @@ codex --version
 
 ## Install
 
+### One-Shot Install
+
+Install the full optimizer into the current project:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash
+```
+
+Install only the skills globally:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user-skills
+```
+
+Install global skills plus an importable copy of the routing rules:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- user
+```
+
+The project install backs up an existing `.claude/CLAUDE.md` before replacing it. Review the script before running it if you already have important project-specific Claude instructions.
+
 ### Project-Level Install
 
 Use this when you want the optimizer to apply to one repository.
@@ -115,6 +137,12 @@ cd /path/to/your-project
 claude
 ```
 
+From a cloned copy of this repo, the same install is:
+
+```bash
+./install.sh
+```
+
 ### User-Level Install
 
 Use this when you want the skills available across projects.
@@ -123,6 +151,12 @@ Use this when you want the skills available across projects.
 git clone https://github.com/nyldn/fable5-optimizer.git ~/.claude/fable5-optimizer
 mkdir -p ~/.claude/skills
 rsync -av ~/.claude/fable5-optimizer/.claude/skills/ ~/.claude/skills/
+```
+
+From a cloned copy of this repo:
+
+```bash
+./install.sh user-skills
 ```
 
 For the routing rules, either merge the relevant parts of `.claude/CLAUDE.md` into your existing `~/.claude/CLAUDE.md`, or import it from your user-level file with an absolute path:

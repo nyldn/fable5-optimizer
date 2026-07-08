@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate release package
+        run: make test
+
+      - name: Validate VHS tape syntax when available
+        run: |
+          if command -v vhs >/dev/null 2>&1; then
+            vhs validate docs/assets/demo.tape
+          else
+            echo "vhs not installed; skipping tape parser validation"
+          fi
