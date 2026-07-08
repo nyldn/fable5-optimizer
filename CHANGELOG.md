@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-08
+
+### Added
+
+- Effort discipline section: default Fable 5 to `high`; effort applies per step, not to run length, so `xhigh`/`max`/ultracode mostly add overthinking and cost.
+- Codex-in-workflows section: thin Claude wrapper agent pattern, `gpt-5.5` label prefix, timeout/background handling, worktree isolation for parallel Codex implementers.
+- Prompt-Codex-simply rule on both surfaces: brief, self-contained prompts; Codex is not Claude.
+- Empty-findings rule on both surfaces: a clean review is a result, name the inspected target, do not rerun.
+- Review boundaries: keep small local checks with Claude, treat Codex output as evidence not authority, add task-specific context (requirements, risky areas, tests) to review briefs.
+- Orchestration-shape note: workflows for deterministic fan-out/verify; checkpoint-driven work stays in the main session with worktrees.
+- Skill now also triggers when the user asks Claude to test a flow, verify UI behavior, or capture screenshots needing local automation, without naming Codex.
+
+### Notes
+
+- Derived from re-review of the source research material (video transcript and setup screenshots) against both surfaces.
+
 ## [1.3.0] - 2026-07-08
 
 ### Changed
@@ -70,7 +86,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.2.0...v1.2.1

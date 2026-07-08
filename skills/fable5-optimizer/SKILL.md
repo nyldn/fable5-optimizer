@@ -1,7 +1,7 @@
 ---
 name: fable5-optimizer
-version: 1.3.0
-description: Use when the user asks how to route work between Claude/Fable 5 and Codex/GPT-5.5, wants to optimize Fable 5 usage, or wants Claude Code to delegate bounded implementation, independent code review, data gathering, or runtime verification to Codex. Trigger on phrases like Fable 5 model routing, Codex delegation, GPT-5.5 review, should Claude or Codex handle this, use Codex to implement or review, or have Codex verify with browser/computer-use/screenshots. Do not use for ordinary implementation or review unless the user is deciding model ownership or asking to involve Codex. Do not use for generic prompt rewriting.
+version: 1.4.0
+description: Use when the user asks how to route work between Claude/Fable 5 and Codex/GPT-5.5, wants to optimize Fable 5 usage or effort settings, or wants Claude Code to delegate bounded implementation, independent code review, data gathering, or runtime verification to Codex. Also use when the user asks Claude to test a flow, verify UI behavior, inspect a running app, or capture screenshots and local browser/computer-use automation is needed. Trigger on phrases like Fable 5 model routing, Codex delegation, GPT-5.5 review, should Claude or Codex handle this, or use Codex to implement or review. Do not use for ordinary implementation or review unless the user is deciding model ownership or asking to involve Codex. Do not use for generic prompt rewriting.
 ---
 
 # Fable 5 Optimizer
@@ -29,6 +29,12 @@ Route by the bottleneck:
 
 Escalate to Fable 5 judgment, regardless of the table, when the change touches a risk surface: API or schema contracts, security-sensitive code or CI configuration, release artifacts, user-facing UI, a new module, or a breaking change.
 
+For large umbrella work, match the orchestration shape to the work: workflows suit deterministic fan-out and verification passes; checkpoint-driven work (each step needs CI, review, or a merge decision before the next) stays in the main session, spawning worktrees and using workflows only for the review passes.
+
+## Effort Discipline
+
+Run Fable 5 at `high` effort by default. Do not default to `xhigh`, `max`, or ultracode: effort applies per tool call and per change, not to how long the model can work, so higher settings do not extend runs. They make the model overthink each step, produce broader changes than asked, and cost far more. Long tasks run fine at `high` or below; raise effort only for a specific step that needs it.
+
 ## Fable Preparedness Gate
 
 Before asking Fable 5 for judgment on a complex active task, pick one path:
@@ -45,7 +51,8 @@ A useful packet fits on roughly a page: the ask, current state and decisions, re
 2. Check the worktree before asking Codex to edit. Do not overwrite user changes.
 3. Prefer read-only Codex runs for review and verification.
 4. Use `codex exec` for noninteractive work. Do not run bare `codex "prompt"` from Claude Code; that opens the interactive TUI.
-5. If Codex is unavailable, say that clearly and continue with Claude's own tools when practical.
+5. Prompt Codex simply and directly; it is not Claude. Keep prompts brief and self-contained, and skip guardrails it does not need (Codex models rarely do things you did not ask for).
+6. If Codex is unavailable, say that clearly and continue with Claude's own tools when practical.
 
 ## Codex Report Contract
 
@@ -59,7 +66,9 @@ Every delegation below asks Codex to report the same five things:
 
 ## Codex Review
 
-Use Codex as a second reviewer, not as the only reviewer. Brief it like a fresh-context verifier: give it the diff or artifact and the acceptance criteria, not your reasoning or expected conclusion. A reviewer that sees the maker's reasoning tends to agree with it.
+Use Codex as a second reviewer, not as the only reviewer. Keep small local checks with Claude; do not delegate review just to avoid reading the code yourself. Treat Codex's output as evidence, not authority.
+
+Brief it like a fresh-context verifier: give it the diff or artifact and the acceptance criteria, not your reasoning or expected conclusion. A reviewer that sees the maker's reasoning tends to agree with it. Add task-specific context when it helps: requirements, risky areas, expected behavior, relevant tests, or files Claude is unsure about.
 
 For uncommitted changes:
 
@@ -82,6 +91,7 @@ After Codex returns:
 - Inspect each cited file or diff yourself.
 - Report confirmed findings first.
 - Separate confirmed issues from suggestions you did not verify.
+- If Codex finds nothing, say that clearly and name the review target it inspected. Empty findings are a result, not a reason to rerun the review.
 
 ## Codex Implementation
 
@@ -129,6 +139,15 @@ Rules:
 ```
 
 Read the report and inspect screenshots or logs before summarizing. For visual claims, judge the screenshot against the intended result; a text-only pass/fail misses the failures that matter for UI work.
+
+## Codex Inside Workflows And Subagents
+
+Workflow and subagent model parameters only take Claude models, so reach Codex through a wrapper:
+
+- Spawn a thin Claude wrapper agent on a cheap model at low effort whose prompt writes a self-contained Codex prompt, runs `codex exec` via Bash, and returns the report (use structured output on the wrapper when the caller needs fields).
+- Label these agents with a `gpt-5.5` prefix (for example `gpt-5.5:review-auth`); the UI shows the wrapper's Claude model, so the label is the only sign the real worker is Codex.
+- Codex runs can outlive the shell timeout: pass an explicit timeout, or run in the background and poll for the report file.
+- Parallel Codex implementation agents need worktree isolation so their edits do not collide in a shared checkout.
 
 ## Anti-Patterns
 
