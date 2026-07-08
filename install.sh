@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODE="${1:-${FABLE5_OPTIMIZER_MODE:-user}}"
+MODE="${1:-${FABLE5_OPTIMIZER_MODE:-skill}}"
 REPO_URL="${FABLE5_OPTIMIZER_REPO_URL:-https://github.com/nyldn/fable5-optimizer.git}"
 SKILL_NAME="fable5-optimizer"
+CLAUDE_MD_TEMPLATE="claude-md/CLAUDE.md"
 
 TMP_DIR=""
 cleanup() {
@@ -18,6 +19,20 @@ require() {
     echo "Missing required command: $1" >&2
     exit 1
   fi
+}
+
+backup_path() {
+  local path="$1"
+  local base="${path}.backup.$(date +%Y%m%d%H%M%S)"
+  local candidate="$base"
+  local counter=1
+
+  while [[ -e "$candidate" ]]; do
+    candidate="${base}.${counter}"
+    counter=$((counter + 1))
+  done
+
+  printf '%s\n' "$candidate"
 }
 
 script_dir=""
@@ -40,7 +55,8 @@ copy_skill() {
   local dest="$2"
 
   if [[ -e "$dest" ]]; then
-    local backup="${dest}.backup.$(date +%Y%m%d%H%M%S)"
+    local backup
+    backup="$(backup_path "$dest")"
     mv "$dest" "$backup"
     echo "Backed up existing skill to $backup"
   fi
@@ -54,28 +70,75 @@ copy_skill() {
   fi
 }
 
+install_claude_md() {
+  local target_dir="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
+  local dest="${FABLE5_OPTIMIZER_CLAUDE_MD:-$target_dir/.claude/CLAUDE.md}"
+  local template="$SOURCE_DIR/$CLAUDE_MD_TEMPLATE"
+  local tmp
+
+  if [[ ! -f "$template" ]]; then
+    echo "Missing CLAUDE.md template: $template" >&2
+    exit 1
+  fi
+
+  mkdir -p "$(dirname "$dest")"
+  tmp="$(mktemp "${TMPDIR:-/tmp}/fable5-optimizer-claude.XXXXXX")"
+
+  if [[ -f "$dest" ]]; then
+    local backup
+    backup="$(backup_path "$dest")"
+    cp "$dest" "$backup"
+    echo "Backed up existing CLAUDE.md to $backup"
+    awk '
+      /<!-- fable5-optimizer:start -->/ { skip = 1; next }
+      /<!-- fable5-optimizer:end -->/ { skip = 0; next }
+      !skip { print }
+    ' "$dest" > "$tmp"
+  else
+    : > "$tmp"
+  fi
+
+  if [[ -s "$tmp" ]]; then
+    printf '\n' >> "$tmp"
+  fi
+  cat "$template" >> "$tmp"
+  printf '\n' >> "$tmp"
+  mv "$tmp" "$dest"
+  echo "Installed always-on $SKILL_NAME policy to $dest"
+}
+
 case "$MODE" in
-  user|global)
+  skill|user|global)
     DEST="${FABLE5_OPTIMIZER_SKILLS_DIR:-$HOME/.claude/skills}/$SKILL_NAME"
     copy_skill "$SOURCE_DIR/skills/$SKILL_NAME" "$DEST"
     echo "Installed $SKILL_NAME to $DEST"
     ;;
 
-  project)
+  skill-project|project)
     TARGET_DIR="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
     DEST="$TARGET_DIR/.claude/skills/$SKILL_NAME"
     copy_skill "$SOURCE_DIR/skills/$SKILL_NAME" "$DEST"
     echo "Installed $SKILL_NAME to $DEST"
     ;;
 
+  claude-md|always-on)
+    install_claude_md
+    ;;
+
   *)
     cat >&2 <<'USAGE'
 Usage:
-  install.sh [user|project]
+  install.sh [skill|skill-project|claude-md]
 
 Modes:
-  user     Install to ~/.claude/skills/fable5-optimizer. Default.
-  project  Install to ./.claude/skills/fable5-optimizer for the current project.
+  skill          Install to ~/.claude/skills/fable5-optimizer. Default.
+  skill-project  Install to ./.claude/skills/fable5-optimizer for the current project.
+  claude-md      Install an always-on policy block to ./.claude/CLAUDE.md.
+
+Legacy aliases:
+  user, global   Same as skill.
+  project        Same as skill-project.
+  always-on      Same as claude-md.
 USAGE
     exit 2
     ;;

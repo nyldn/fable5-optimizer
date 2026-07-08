@@ -70,3 +70,6 @@ jobs:
               sys.exit(1)
           print("OK: skill package validated")
           PY
+
+      - name: Test installer modes
+        run: tests/install.sh
