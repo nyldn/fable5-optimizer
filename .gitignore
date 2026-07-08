@@ -1,0 +1,25 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+tmp/
+temp/
+node_modules/
+dist/
+build/
+coverage/
+
+# Keep local research/dropzone material out of public releases if copied here.
+research/
+Docs/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mov
+*.mp4
+transcript.md
+example-claude.md

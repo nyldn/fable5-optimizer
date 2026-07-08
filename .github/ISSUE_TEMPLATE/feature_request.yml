@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a routing rule, skill improvement, or documentation change.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow failure or friction does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should change?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Include examples, command output, or anonymized behavior if useful.
+    validations:
+      required: false

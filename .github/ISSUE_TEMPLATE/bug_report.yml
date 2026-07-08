@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a problem with the Claude Code config or skills.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should Claude or Codex have done instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include the request, skill invoked, and relevant non-secret context.
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Claude Code version, Codex CLI version, OS, and any relevant config.
+    validations:
+      required: false
