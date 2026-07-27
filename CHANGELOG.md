@@ -2,9 +2,26 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each release is tagged `vX.Y.Z` in git. The skill's frontmatter `version` field matches the latest release.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each release is tagged `vX.Y.Z` in git.
 
 ## [Unreleased]
+
+## [2.0.0] - 2026-07-27
+
+### Added
+
+- Claude Opus 5 as the everyday default for complex Claude Code work, with Fable 5 as the highest-capability escalation tier and Codex/GPT-5.6 Sol as an independent frontier peer.
+- Progressive-disclosure Codex workflow reference covering review, bounded implementation, runtime verification, report contracts, sandboxing, model pinning, and wrapper agents.
+- Current primary-source design links for Anthropic model selection, Opus 5 prompting, Claude 5 context engineering, Claude Code skills, OpenAI reasoning models, and Codex sandboxing.
+
+### Changed
+
+- Reworked the routing policy for the Opus 5 landscape. Multi-model loops are now optional and role-based rather than the default shape for mergeable work.
+- Replaced the full always-on skill duplication with a lightweight `CLAUDE.md` router. `claude-md` install mode now installs the detailed project-local skill alongside the managed policy block.
+- Updated effort guidance: Opus 5 and Fable 5 start at `high`; higher settings require a task-specific reason or evaluation evidence.
+- Reframed safety as an execution-environment property. Codex review defaults to read-only, edits to workspace-limited access, and broader access requires explicit scope.
+- Replaced model-personality and sticker-price claims with task-specific evaluation guidance covering quality, latency, context use, tool calls, rework, and total cost.
+- Removed the non-standard `version` field from skill frontmatter; Git tags and this changelog now carry release versions.
 
 ## [1.6.0] - 2026-07-08
 
@@ -106,7 +123,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.6.0...v2.0.0
 [1.6.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.4.0...v1.5.0

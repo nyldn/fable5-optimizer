@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # The committed always-on template must be byte-identical to the block
-# install.sh generates from the skill body. This makes drift between the
-# two public instruction surfaces impossible instead of merely detectable.
+# install.sh generates from the lightweight policy source.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 SKILL="$ROOT/skills/fable5-optimizer/SKILL.md"
+POLICY="$ROOT/claude-md/POLICY.md"
 TEMPLATE="$ROOT/claude-md/CLAUDE.md"
 
 if ! diff -u <("$ROOT/install.sh" claude-md-print) "$TEMPLATE"; then
@@ -15,12 +15,12 @@ if ! diff -u <("$ROOT/install.sh" claude-md-print) "$TEMPLATE"; then
 fi
 
 ANCHORS=(
+  "Opus 5"
   "Fable 5"
+  "GPT-5.6 Sol"
   "Codex"
-  "bounded"
-  "verif"
-  "destructive"
   "acceptance criteria"
+  "sandbox"
 )
 
 for anchor in "${ANCHORS[@]}"; do
@@ -30,6 +30,32 @@ for anchor in "${ANCHORS[@]}"; do
   fi
 done
 
+if grep -q '^version:' "$SKILL"; then
+  echo "non-standard version field found in $SKILL; use Git release tags instead" >&2
+  exit 1
+fi
+
+POLICY_ANCHORS=(
+  "Opus 5"
+  "Fable 5"
+  "GPT-5.6 Sol"
+  "Codex"
+  "/fable5-optimizer"
+)
+
+for anchor in "${POLICY_ANCHORS[@]}"; do
+  if ! grep -qi -- "$anchor" "$POLICY"; then
+    echo "missing anchor '$anchor' in $POLICY" >&2
+    exit 1
+  fi
+done
+
+policy_words="$(wc -w < "$POLICY" | tr -d ' ')"
+if [[ "$policy_words" -gt 500 ]]; then
+  echo "$POLICY is too large for always-on context: $policy_words words (max 500)" >&2
+  exit 1
+fi
+
 for marker in "fable5-optimizer:start" "fable5-optimizer:end"; do
   if ! grep -q -- "$marker" "$TEMPLATE"; then
     echo "missing managed-block marker '$marker' in $TEMPLATE" >&2
@@ -37,4 +63,4 @@ for marker in "fable5-optimizer:start" "fable5-optimizer:end"; do
   fi
 done
 
-echo "OK: always-on template matches the skill body"
+echo "OK: always-on template matches the lightweight policy ($policy_words words)"

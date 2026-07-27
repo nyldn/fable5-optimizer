@@ -1,17 +1,19 @@
 # Fable 5 Optimizer Project Instructions
 
-This repo has two public instruction surfaces:
+This repo has two public instruction surfaces with separate source files:
 
 - On-demand skill: `skills/fable5-optimizer/SKILL.md`
 - Always-on project policy template: `claude-md/CLAUDE.md`
 
-The skill body is the single source of truth. `claude-md/CLAUDE.md` is generated from it: never hand-edit that file. After changing `SKILL.md`, regenerate with:
+The detailed skill uses progressive disclosure; Codex command templates live in `skills/fable5-optimizer/references/`.
+
+The lightweight always-on block is sourced from `claude-md/POLICY.md`. `claude-md/CLAUDE.md` is generated from that policy: never hand-edit the generated file. After changing `POLICY.md`, regenerate with:
 
 ```bash
 ./install.sh claude-md-print > claude-md/CLAUDE.md
 ```
 
-`tests/sync.sh` fails CI if the generated file is stale. Write the skill body so it reads correctly on both surfaces (avoid "this skill" phrasing). Update `README.md`, `install.sh`, and tests when install modes or target paths change.
+`claude-md` install mode writes the always-on block and installs the full skill to `.claude/skills/fable5-optimizer/`, so detailed guidance loads only when needed. `tests/sync.sh` fails CI if the generated file is stale or the policy grows beyond its lightweight boundary. Update `README.md`, `install.sh`, and tests when install modes or target paths change.
 
 Before release, run:
 

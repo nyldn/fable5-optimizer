@@ -1,57 +1,59 @@
 # Fable 5 Optimizer
 
-Claude Code guidance for splitting work between Fable 5 and Codex (GPT-5.5). It ships in two forms: a skill that loads on demand when a task is about model routing, and a `CLAUDE.md` policy block you can install into a project so the rule applies to every session.
+Claude Code guidance for routing work across Claude Opus 5, Claude Fable 5, and Codex/GPT-5.6 Sol.
 
-The premise: Fable 5 is the model you want making judgment calls, and the one you least want burning tokens on mechanical work. Codex is far cheaper and will grind through a migration or a review pass without complaint, but it should not be picking your architecture. This package tells Claude Code where that line sits and how to hand work across it.
+The default has changed: Opus 5 is now the everyday Claude Code lead for complex, mergeable work. Fable 5 is the escalation tier for the hardest capability and judgment gaps. Codex is a frontier peer for independent review, context gathering, alternative execution, and runtime verification—not merely a cheap mechanical worker.
 
-## What you get
+The project ships as an on-demand Claude Code skill plus an optional lightweight `CLAUDE.md` policy.
 
-- A routing table saying which model owns which kind of work, plus the risk signals (API contracts, security surfaces, user-facing UI, breaking changes) that always escalate to Fable 5.
-- A preparedness gate for complex tasks: when Codex should assemble a context packet first, so Fable 5 starts with judgment instead of rebuilding state.
-- Working `codex` commands for review, bounded implementation, and browser or computer-use verification. All of them report against the same evidence contract.
-- Guardrails: checkable acceptance criteria before delegating, fresh-context review briefs, and a rule for when an autonomous run should pause.
+## What You Get
+
+- A routing matrix for choosing Opus, Fable, or Codex by the actual bottleneck.
+- Effort guidance that starts Opus and Fable at `high` and raises effort only when the task warrants it.
+- Cross-model patterns that prefer one capable owner and add reviewers only for a distinct job.
+- A compact context-packet pattern for state that is genuinely scattered.
+- Current Codex CLI templates for read-only review, bounded implementation, and browser/computer-use verification.
+- Workspace-limited safety defaults for agentic execution.
 
 ## Install
 
-Pick one mode:
-
 | Mode | Pick this if |
 |---|---|
-| On-demand skill (default) | You want `/fable5-optimizer` loaded only when a task is about Fable 5/Codex routing. Installs per user, works across all your projects. |
-| Project-local skill | Same, but scoped to one project's `.claude/skills/`. |
-| Always-on `CLAUDE.md` | You want the routing policy active in every session of one project, even when the skill would not trigger on its own. Costs a small amount of always-loaded context. |
+| On-demand skill (default) | You want routing guidance loaded only when a task mentions these models or asks who should own the work. Installs per user and works across projects. |
+| Project-local skill | You want the same on-demand behavior in one repository. |
+| Always-on router | You want a short routing policy active in every session. This also installs the detailed project-local skill so Claude can load the mechanics only when needed. |
 
-### On-demand skill
+### On-Demand Skill
 
-The easiest path is to ask Claude Code:
+Ask Claude Code:
 
 ```text
 install this skill https://github.com/nyldn/fable5-optimizer
 ```
 
-Or from the shell:
+Or install from the shell:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash
 ```
 
-Or from a cloned copy:
+From a cloned copy:
 
 ```bash
 ./install.sh
 ```
 
-The default install writes to `~/.claude/skills/fable5-optimizer`. An existing skill folder gets backed up before it is replaced.
+The default install writes to `~/.claude/skills/fable5-optimizer`. Existing skill folders are backed up before replacement.
 
-For the project-local variant:
+For a project-local install:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- skill-project
 ```
 
-### Always-on CLAUDE.md
+### Always-On Router
 
-Run from the project root:
+Run from the target project root:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nyldn/fable5-optimizer/main/install.sh | bash -s -- claude-md
@@ -63,24 +65,39 @@ Or from a cloned copy:
 ./install.sh claude-md
 ```
 
-This writes a managed block to `.claude/CLAUDE.md` in the current project. The block is generated from the skill body at install time, so it carries the complete guidance (routing, command templates, report contract), not a summary. If the file already exists it is backed up first, and re-running the installer replaces the block instead of stacking duplicates.
+This mode:
 
-## Usage examples
+1. installs the detailed skill to `.claude/skills/fable5-optimizer/`
+2. writes a managed routing block to `.claude/CLAUDE.md`
 
-Invoke the skill directly:
+The managed block is intentionally lightweight. Re-running the installer replaces the block rather than stacking copies, preserves unrelated project instructions, and backs up existing files first.
+
+## Default Routing
+
+| Work | Start with |
+|---|---|
+| Complex coding, planning, debugging, review, or enterprise workflows | Opus 5 |
+| Highest-capability judgment, unusually ambiguous architecture, or a problem Opus cannot resolve | Fable 5 |
+| Independent technical review, context scouting, alternative implementation, or runtime automation | Codex/GPT-5.6 Sol |
+| Routine or high-volume work | The cheapest capable model already in context |
+
+Use the table as a starting point, not a guarantee. For repeated workflows, evaluate models on your actual prompts, artifacts, acceptance criteria, total task cost, and rework.
+
+## Usage Examples
 
 ```text
-/fable5-optimizer plan this change, then use Codex for an independent review
-/fable5-optimizer use Codex to implement this bounded migration and verify the diff
-/fable5-optimizer verify the running checkout flow with browser automation and screenshots
+/fable5-optimizer should Opus own this migration, or does it need Fable?
+/fable5-optimizer have GPT-5.6 Sol independently review this Opus implementation
+/fable5-optimizer prepare a compact context packet before escalating this architecture decision
+/fable5-optimizer verify the running checkout flow with Codex browser automation
 ```
 
-Claude Code will also load it on its own when a request is about Fable 5 model routing, Codex delegation, GPT-5.5 review, or computer-use verification.
+Claude Code can also load the skill automatically when a request is about Opus/Fable/Codex routing, effort selection, cross-model orchestration, or local runtime verification.
 
 ## Requirements
 
 - Claude Code with skills support.
-- Codex CLI, installed and authenticated, if you want the delegation parts to run. Without it the routing guidance still works; Claude just tells you Codex is unavailable and carries on with its own tools.
+- Codex CLI, installed and authenticated, for Codex delegation.
 
 Check both:
 
@@ -89,13 +106,28 @@ claude --version
 codex --version
 ```
 
+Without Codex, the Claude routing guidance still works.
+
+## Design Basis
+
+The current policy is grounded in:
+
+- Anthropic's [Claude model selection guide](https://platform.claude.com/docs/en/about-claude/models/choosing-a-model)
+- Anthropic's [Opus 5 prompting guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)
+- Anthropic's [Claude 5 context-engineering guidance](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
+- Anthropic's [Claude Code skills guide](https://code.claude.com/docs/en/slash-commands)
+- OpenAI's [reasoning-model guidance](https://developers.openai.com/api/docs/guides/reasoning)
+- OpenAI's [Codex sandbox documentation](https://learn.chatgpt.com/docs/sandboxing)
+
+Provider pricing, retention rules, model behavior, and subscription limits change quickly. Verify current terms before making compliance or procurement decisions.
+
 ## Versioning
 
 Releases follow semantic versioning and are tagged `vX.Y.Z`. History lives in [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
-Keep changes focused on the skill itself. If a new behavior needs helper files, put them under `skills/fable5-optimizer/` and reference them from `SKILL.md` so Claude knows when to use them.
+Keep changes focused on routing policy. Put invocation-only detail under `skills/fable5-optimizer/references/` so the always-loaded context stays small.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 

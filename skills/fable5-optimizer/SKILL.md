@@ -1,177 +1,114 @@
 ---
 name: fable5-optimizer
-version: 1.6.0
-description: Load this skill before answering whenever a request mentions Codex, GPT-5.5, codex commands, or Fable 5, or asks which model or agent should handle, review, implement, or verify something. That includes advisory questions (should Claude or Codex handle this, who should review this branch diff, is this worth delegating), not just direct commands. Also covers delegating bounded implementation, independent code review, data gathering, or runtime verification to Codex; optimizing Fable 5 usage or effort settings; and requests to test a flow, verify UI behavior, inspect a running app, or capture screenshots needing local browser/computer-use automation. Do not use for ordinary implementation or review with no model-ownership question, and not for generic prompt rewriting.
+description: Load before answering whenever a request mentions Claude Opus 5, Claude Fable 5, GPT-5.6 Sol, Codex, or asks which model or agent should plan, implement, review, research, or verify work. Use for model routing, cross-model workflows, Codex delegation, effort selection, context preparation, and runtime/browser verification. Do not use for ordinary implementation or review with no model-choice question, or for generic prompt rewriting.
 ---
 
 # Fable 5 Optimizer
 
-Keep Fable 5 focused on judgment and coordination while Codex handles bounded execution or evidence gathering.
+Route work across Claude Opus 5, Claude Fable 5, and Codex/GPT-5.6 Sol without turning every task into a multi-model ceremony.
 
-## Core Rule
+## Default Policy
 
-Fable 5 owns the work. Codex can help, but it does not replace Claude's responsibility to plan, inspect, verify, and report.
+Start complex Claude Code work with **Opus 5 at `high` effort**. It is the everyday default for planning, production implementation, debugging, code review, knowledge work, and agentic tool use.
 
-Codex agreement never settles a judgment-class decision: choosing between valid architectures, design taste, or product tradeoffs stays with Fable 5 even when Codex output looks unanimous. And if making cheap-model output good would cost more supervision than doing the work with Fable 5, route it to Fable 5.
+Escalate to **Fable 5** when the task needs Anthropic's highest available capability: unusually ambiguous architecture, the hardest long-horizon work, deep or obscure knowledge, or a judgment call where Opus has exposed a real capability gap.
+
+Use **Codex/GPT-5.6 Sol** as a frontier peer when an independent perspective, a different tool harness, large-context evidence gathering, persistent execution, or browser/computer-use automation is useful. It is not limited to throwaway scripts, and its output is evidence rather than authority.
+
+Prefer one capable model end to end when that is enough. Add another model only when it has a distinct job.
+
+## Model Roles
+
+| Model | Default role | Reach for it when | Watch for |
+|---|---|---|---|
+| Opus 5 | Everyday Claude Code lead | Complex coding, planning, refactors, enterprise work, visual tasks, review, and multi-step execution | Over-verification, scope expansion, verbose narration, unnecessary subagents |
+| Fable 5 | Capability escalation | Highest-stakes judgment, novel or deeply ambiguous problems, hardest long-running agents, obscure knowledge | Cost, latency, safety-classifier fallbacks, and data-retention constraints |
+| GPT-5.6 Sol through Codex | Independent frontier executor and reviewer | Fresh-context review, technical edge cases, research/context scouting, tool-heavy execution, runtime verification | Broad diffs if the boundary is vague; destructive risk when the execution environment is too permissive |
+
+These are routing heuristics, not personality guarantees. Model behavior varies by harness, effort, tools, and task. For repeated work, compare models on the user's real prompts and acceptance criteria.
 
 ## Routing Gate
 
 Route by the bottleneck:
 
-| Work type | Default owner |
+| Work type | Start with |
 |---|---|
-| Ambiguous architecture, product judgment, API design, UX taste, user-facing copy | Fable 5 or another high-taste Claude model |
-| Final plan or implementation judgment | Fable 5, optionally with Codex as an independent reviewer |
-| Clear mechanical implementation, migrations, repetitive edits, large text/data review | Codex |
-| Independent code review of a diff, branch, commit, or implementation | Codex, then Claude verifies findings |
-| Browser/app/simulator verification, screenshots, runtime UI checks | Codex if it has suitable local automation tools |
-| Routine lookups, small rewrites, single-file fixes | Whichever is already in context; a cheaper model is often the right answer |
-| Cheap in-harness Claude subagent duty: Codex wrapper agents, structured summaries, glue between workflow stages | Sonnet 5 at low effort; for longer outputs Opus 4.8 is often cheaper because Sonnet 5 is token-hungry |
+| Routine lookup, classification, or small rewrite | The cheapest capable model already in context |
+| Production coding, debugging, refactoring, code review, or business workflow | Opus 5 |
+| Architecture, product judgment, API design, UX taste, or user-facing copy | Opus 5; escalate to Fable 5 when ambiguity or stakes justify it |
+| Highest-capability research or a problem Opus has failed to resolve | Fable 5 |
+| Independent code review, edge-case search, context gathering, or alternative implementation | Codex/GPT-5.6 Sol, then the primary Claude session verifies |
+| Browser, app, simulator, screenshot, or computer-use verification | Whichever harness has the best local automation; Codex is often a strong route |
+| Deterministic bulk edits or data processing | The cheapest capable execution model; Codex is often suitable |
 
-Escalate to Fable 5 judgment, regardless of the table, when the change touches a risk surface: API or schema contracts, security-sensitive code or CI configuration, release artifacts, user-facing UI, a new module, or a breaking change.
-
-For large umbrella work, match the orchestration shape to the work: workflows suit deterministic fan-out and verification passes; checkpoint-driven work (each step needs CI, review, or a merge decision before the next) stays in the main session, spawning worktrees and using workflows only for the review passes.
+Treat API/schema contracts, security-sensitive work, release artifacts, destructive migrations, and user-facing UI as risk surfaces. Keep final judgment in the primary Claude session and escalate to Fable when the unresolved risk is genuinely capability- or judgment-bound.
 
 ## Effort Discipline
 
-Run Fable 5 at `high` effort by default. Do not default to `xhigh`, `max`, or ultracode: effort applies per tool call and per change, not to how long the model can work, so higher settings do not extend runs. They make the model overthink each step, produce broader changes than asked, and cost far more. Long tasks run fine at `high` or below; raise effort only for a specific step that needs it.
+- **Opus 5:** start at `high`. Use `low` or `medium` when evals show quality holds; use `xhigh` for demanding coding or agentic work. Do not default to `max`.
+- **Fable 5:** start at `high`; use `xhigh` only for the most capability-sensitive work and lower effort for routine tasks.
+- **GPT-5.6 Sol:** start with the Codex default. Increase effort only when the task needs deeper planning or analysis and the extra latency and token use are justified.
 
-## Fable Preparedness Gate
+Effort is a tuning knob, not a substitute for a clear task or a way to extend run duration. Compare total task cost, latency, context use, tool calls, and rework—not token sticker prices alone.
 
-Before asking Fable 5 for judgment on a complex active task, pick one path:
+## Context And Handoffs
 
-1. **Active context only** when the current conversation already holds the needed state.
-2. **Prepared context packet** when state is spread across files, diffs, tool output, or prior decisions: have Codex assemble a short Markdown packet first.
-3. **Quick checkpoint first** when Codex is near a natural stopping point: capture only the cheap nearby item (save the artifact, run the implied check, record the diff/status), then build the packet. Large missing work is recorded in the packet as a gap; it never blocks the judgment pass.
+Before a cross-model handoff, state:
 
-A useful packet fits on roughly a page: the ask, current state and decisions, relevant paths/diffs/screenshots, validation evidence or why it was skipped, what was tried or ruled out, known gaps, and the exact judgment requested. Do not create a packet just to look thorough; use it only when it saves Fable 5 from reconstructing state.
+- the exact task and intended outcome
+- relevant files, diff, artifact, or runtime target
+- checkable acceptance criteria
+- scope boundaries and actions that require approval
+- known decisions, gaps, and validation already run
 
-## Before Delegating
+Use active context when it already contains the state. When state is scattered across files, diffs, screenshots, or prior decisions, have Codex assemble a compact context packet before an expensive judgment pass. Keep it to roughly a page: ask, current state, evidence, decisions, gaps, and the exact judgment requested.
 
-1. State the task boundary: files, behavior, acceptance criteria, and what must not change. Make criteria independently checkable ("the CSV has a numeric price column"), not vibes ("data looks right"). State your assumptions; if the ask has multiple readings, surface them instead of picking silently.
-2. Check the worktree before asking Codex to edit. Do not overwrite user changes.
-3. Prefer read-only Codex runs for review and verification.
-4. Use `codex exec` for noninteractive work. Do not run bare `codex "prompt"` from Claude Code; that opens the interactive TUI.
-5. Prompt Codex simply and directly; it is not Claude. Keep prompts brief and self-contained, and skip guardrails it does not need (Codex models rarely do things you did not ask for).
-6. If Codex is unavailable, say that clearly and continue with Claude's own tools when practical.
+Do not create a packet for a small task or repeat facts the receiving model can cheaply inspect.
 
-## Codex Report Contract
+## Multi-Model Patterns
 
-Every delegation below asks Codex to report the same five things:
+### Default: one capable owner
 
-- status: done, blocked, or found issues / no issues
-- files changed or reviewed
-- checks run and their results
-- evidence paths: reports, logs, screenshots
-- blockers or gaps
+Let Opus 5 plan, implement, and verify the task. This is the right path for most mergeable work.
 
-## Codex Review
+### High-stakes split
 
-Use Codex as a second reviewer, not as the only reviewer. Keep small local checks with Claude; do not delegate review just to avoid reading the code yourself. Treat Codex's output as evidence, not authority.
+Use only the stages that add value:
 
-Brief it like a fresh-context verifier: give it the diff or artifact and the acceptance criteria, not your reasoning or expected conclusion. A reviewer that sees the maker's reasoning tends to agree with it. Add task-specific context when it helps: requirements, risky areas, expected behavior, relevant tests, or files Claude is unsure about.
+1. Opus 5 produces the plan or implementation.
+2. Codex reviews from fresh context for concrete bugs, edge cases, and missing verification.
+3. Fable 5 reviews only the remaining architecture, taste, or capability-sensitive question.
+4. The primary Claude session verifies findings against the artifact and resolves conflicts.
 
-For uncommitted changes:
+Do not require all three models for every task. Reciprocal reviews are useful for calibrating a new model or resolving real disagreement, not as a standing ritual.
 
-```bash
-REPORT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/fable5-review.XXXXXX")"
-REPORT="$REPORT_DIR/report.md"
-codex review --uncommitted > "$REPORT"
-```
+### Context scout
 
-For a branch diff, use `codex review --base main > "$REPORT"`.
+Codex can gather repository state, relevant source material, logs, and test evidence. Ask for a factual packet, not a decision disguised as a summary. The judgment model should receive sources and acceptance criteria without the maker's preferred conclusion.
 
-Current Codex CLI versions do not accept custom instructions together with `--uncommitted` or `--base`. When the review needs a specific focus (a requirement to check, a suspected failure mode), run a read-only exec instead:
+## Prompt Discipline For Claude 5
 
-```bash
-codex exec -C "$PWD" --sandbox read-only -o "$REPORT" "Review <the uncommitted changes | the diff against <base>> for <focus>. Prioritize findings over summary: severity, file/line reference, concrete failure mode, suggested fix direction. Do not edit files. If there are no substantive findings, say so and name residual test gaps."
-```
+- Give the goal, why it matters, constraints, and output contract. For implementation, provide the complete specification up front.
+- Keep instructions brief and avoid repeating the same rule across `CLAUDE.md`, skills, prompts, and tool descriptions.
+- Let the model use judgment for routine choices. Constrain scope when different interpretations would materially change the work.
+- Opus 5 already self-corrects and verifies. Remove blanket "double-check everything" steps or mandatory verifier subagents unless the workflow has a specific independent-verification need.
+- State desired response or document length explicitly; effort controls thinking, not visible verbosity.
+- For long-document analysis, place the source material before the question. When factual precision matters, ask for relevant extracts and ground the analysis in them.
+- Do not ask a model to reveal or reproduce hidden reasoning. Ask for conclusions, evidence, tradeoffs, or a concise rationale.
+- Remove legacy anti-laziness prompts, token countdowns, aggressive all-caps triggers, and micromanaged step lists.
 
-After Codex returns:
+## Safety And Data Boundaries
 
-- Inspect each cited file or diff yourself.
-- Report confirmed findings first.
-- Separate confirmed issues from suggestions you did not verify.
-- If Codex finds nothing, say that clearly and name the review target it inspected. Empty findings are a result, not a reason to rerun the review.
+- Use a read-only sandbox for review and evidence gathering.
+- For edits, prefer a workspace-limited sandbox. Expand writable roots only to named targets.
+- Do not use full-device access as the default. Require user authority for destructive, irreversible, account-changing, or externally consequential actions.
+- Isolate parallel implementers in separate worktrees.
+- Data governance overrides capability routing. Verify current provider retention and compliance terms before sending restricted data; do not infer them from model quality or subscription access.
 
-## Codex Implementation
+## Codex Workflows
 
-Use Codex for bounded implementation only when the expected change is clear. Where possible, phrase the task as a verifiable goal: "write a failing test that reproduces the bug, then make it pass" beats "fix the bug".
-
-```bash
-REPORT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/fable5-implementation.XXXXXX")"
-REPORT="$REPORT_DIR/report.md"
-codex exec -C "$PWD" -o "$REPORT" "Implement this bounded change. Keep edits scoped. Preserve existing style. Do not perform unrelated refactors. Run relevant lightweight verification if available and report per the contract: status, files changed, checks run, evidence, blockers.
-
-Task:
-<exact task>
-
-Acceptance criteria:
-- <criterion>
-
-Do not perform destructive git operations."
-```
-
-After Codex edits:
-
-- Review the diff before reporting success.
-- Run any important checks Codex skipped.
-- Fix small misses directly when that is faster than another delegation.
-
-## Runtime And Computer-Use Verification
-
-Use this route for browser automation, screenshots, simulators, desktop app inspection, or checking a running UI.
-
-```bash
-REPORT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/fable5-runtime.XXXXXX")"
-REPORT="$REPORT_DIR/report.md"
-codex exec -C "$PWD" -o "$REPORT" "Verify this runtime behavior using local browser/app automation or computer-use tools if available. Do not edit files. Prefer Playwright or browser automation for web apps. Capture screenshots for visual claims and save them under this report directory if possible.
-
-Target:
-- URL/app:
-- Flow:
-- Expected result:
-- Evidence needed:
-
-Rules:
-- Do not use secrets unless explicitly provided for this task.
-- Do not perform purchases, destructive actions, account changes, or terms acceptance.
-- Report per the contract: status, environment and steps, checks run, evidence paths, blockers."
-```
-
-Read the report and inspect screenshots or logs before summarizing. For visual claims, judge the screenshot against the intended result; a text-only pass/fail misses the failures that matter for UI work.
-
-## Codex Inside Workflows And Subagents
-
-Workflow and subagent model parameters only take Claude models, so reach Codex through a wrapper:
-
-- Spawn a thin Claude wrapper agent (Sonnet 5 at low effort works well) whose prompt writes a self-contained Codex prompt, runs `codex exec` via Bash, and returns the report (use structured output on the wrapper when the caller needs fields).
-- Label these agents with a `gpt-5.5` prefix (for example `gpt-5.5:review-auth`); the UI shows the wrapper's Claude model, so the label is the only sign the real worker is Codex.
-- Codex runs can outlive the shell timeout: pass an explicit timeout, or run in the background and poll for the report file.
-- Parallel Codex implementation agents need worktree isolation so their edits do not collide in a shared checkout.
-
-## Anti-Patterns
-
-When writing prompts for Fable-directed or Codex-delegated work, avoid:
-
-- asking for internal reasoning to be reproduced in the output; ask for the useful rationale instead
-- token or context countdowns
-- API parameter advice not confirmed against current official docs
-- aggressive trigger language ("CRITICAL", "MUST") unless strict compliance wording is actually needed
-- naming the target model as a role label inside a generated prompt body; use capability roles
-- micromanaged step-by-step plans when a boundary and acceptance criteria are enough
-
-## Checkpoints
-
-Pause only for destructive or irreversible actions, a real scope change, or input only the user can provide. Otherwise keep going and report at the end.
+Read [references/codex-workflows.md](references/codex-workflows.md) only when actually invoking Codex, creating a Codex wrapper, or checking the CLI command patterns. It contains the shared report contract plus review, implementation, runtime-verification, and workflow-wrapper templates.
 
 ## Reporting
 
-When reporting back:
-
-- Start with the decision or outcome.
-- Name which parts Claude handled and which parts Codex handled.
-- Cite concrete evidence: files changed, commands run, screenshots, logs, or reports.
-- Call out anything not verified.
-- If the work was already in good shape, say so and keep the diff minimal; do not invent changes to appear useful.
-- Keep the explanation short unless the user asks for detail.
+Lead with the outcome. Say which model handled which distinct job, cite concrete files/checks/evidence, and identify anything not verified. If another model found no issues, name the reviewed target and report that result plainly.

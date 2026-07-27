@@ -30,7 +30,10 @@ exec_help="$(codex exec --help 2>&1)"
 require_flag "$exec_help" "--cd" "codex exec"
 require_flag "$exec_help" "--output-last-message" "codex exec"
 require_flag "$exec_help" "--sandbox" "codex exec"
+require_flag "$exec_help" "--model" "codex exec"
+require_flag "$exec_help" "--add-dir" "codex exec"
 require_flag "$exec_help" "read-only" "codex exec"
+require_flag "$exec_help" "workspace-write" "codex exec"
 
 if [[ "$status" -ne 0 ]]; then
   codex --version >&2 || true

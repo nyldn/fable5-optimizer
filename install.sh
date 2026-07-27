@@ -69,26 +69,28 @@ copy_skill() {
   fi
 }
 
-# The always-on block is generated from the skill body so both install
-# surfaces always carry identical, complete guidance.
+# The always-on block stays deliberately small. Detailed guidance lives in
+# the project-local skill that claude-md mode installs alongside it.
 print_claude_md_block() {
-  local skill_md="$SOURCE_DIR/skills/$SKILL_NAME/SKILL.md"
+  local policy_md="$SOURCE_DIR/claude-md/POLICY.md"
 
-  if [[ ! -f "$skill_md" ]]; then
-    echo "Missing skill source: $skill_md" >&2
+  if [[ ! -f "$policy_md" ]]; then
+    echo "Missing always-on policy source: $policy_md" >&2
     exit 1
   fi
 
   printf '<!-- fable5-optimizer:start -->\n'
-  printf '<!-- Generated from skills/%s/SKILL.md by install.sh. Do not hand-edit inside the markers. -->\n' "$SKILL_NAME"
-  awk '
-    NR == 1 && /^---$/ { fm = 1; next }
-    fm == 1 && /^---$/ { fm = 2; body = 0; next }
-    fm == 1 { next }
-    fm == 2 && body == 0 && /^$/ { next }
-    { body = 1; print }
-  ' "$skill_md"
+  printf '<!-- Generated from claude-md/POLICY.md by install.sh. Do not hand-edit inside the markers. -->\n'
+  cat "$policy_md"
   printf '<!-- fable5-optimizer:end -->\n'
+}
+
+install_project_skill() {
+  local target_dir="$1"
+  local dest="$target_dir/.claude/skills/$SKILL_NAME"
+
+  copy_skill "$SOURCE_DIR/skills/$SKILL_NAME" "$dest"
+  echo "Installed project-local $SKILL_NAME skill to $dest"
 }
 
 install_claude_md() {
@@ -130,12 +132,12 @@ case "$MODE" in
 
   skill-project|project)
     TARGET_DIR="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
-    DEST="$TARGET_DIR/.claude/skills/$SKILL_NAME"
-    copy_skill "$SOURCE_DIR/skills/$SKILL_NAME" "$DEST"
-    echo "Installed $SKILL_NAME to $DEST"
+    install_project_skill "$TARGET_DIR"
     ;;
 
   claude-md|always-on)
+    TARGET_DIR="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
+    install_project_skill "$TARGET_DIR"
     install_claude_md
     ;;
 
@@ -151,9 +153,8 @@ Usage:
 Modes:
   skill            Install to ~/.claude/skills/fable5-optimizer. Default.
   skill-project    Install to ./.claude/skills/fable5-optimizer for the current project.
-  claude-md        Install an always-on policy block to ./.claude/CLAUDE.md.
-                   The block is generated from the skill body, so it carries
-                   the complete guidance.
+  claude-md        Install a lightweight policy block to ./.claude/CLAUDE.md
+                   plus the detailed project-local skill for on-demand use.
   claude-md-print  Print the generated block to stdout (used to regenerate
                    claude-md/CLAUDE.md in this repo).
 
