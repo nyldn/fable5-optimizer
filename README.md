@@ -43,7 +43,7 @@ From a cloned copy:
 ./install.sh
 ```
 
-The default install writes to `~/.claude/skills/fable5-optimizer`. A changed skill folder is backed up to `.claude/skill-backups/` before replacement, which keeps the copy out of the skills root Claude Code scans. Reinstalling an unchanged version does nothing and leaves no backup.
+The default install writes to `~/.claude/skills/fable5-optimizer`. A changed skill folder is backed up to `~/.claude/skill-backups/` first, a sibling of the skills root rather than a folder inside it, so Claude Code never discovers the backup as a second skill with the same name. Project-local installs use `.claude/skill-backups/` in the project. Reinstalling an unchanged version does nothing and leaves no backup.
 
 For a project-local install:
 
@@ -71,6 +71,8 @@ This mode:
 2. writes a managed routing block to `.claude/CLAUDE.md`
 
 The managed block is intentionally lightweight. Re-running the installer replaces the block rather than stacking copies, preserves unrelated project instructions, and backs up existing files first. When nothing would change, the rerun is a byte-for-byte no-op and writes no backup.
+
+Markers are matched as whole lines, so prose that merely mentions them is left alone. If a file opens a managed block without closing it, the installer refuses rather than guessing where the block ends. A symlinked `CLAUDE.md` is written through, so a dotfiles-managed file keeps its indirection. `CLAUDE.md` is written with your umask default.
 
 ## Default Routing
 

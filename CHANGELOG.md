@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-07-27
+
+An xhigh review of the v2.0.1 installer found that the hardening pass introduced worse failures than it fixed. Upgrade from v2.0.1 or earlier before running `claude-md` mode again.
+
+### Fixed
+
+- The managed-block markers are matched as whole lines. An unanchored match meant prose that merely mentioned the marker text was treated as a block opener, and every line after it was silently deleted. A file that opens a block without closing it is now a refusal with an explanation, not a truncation.
+- A symlinked `CLAUDE.md` is written through rather than replaced, so a dotfiles-managed file keeps its indirection and the real target actually receives the policy block.
+- `CLAUDE.md` is written with the invoking user's umask default instead of the destination's existing mode. Reading the mode of a symlink reported the link's own bits, which are 0755 on macOS and 0777 on Linux, so v2.0.1 could install a world-writable instructions file. Applying the umask default also repairs the 0600 that v2.0.0 left behind, which the previous release claimed to fix but never reached, because its no-op guard returned before the `chmod`.
+- A destination that is not a regular file is refused. Previously a directory at the destination absorbed the staging file, and the installer reported success with no policy installed and a hidden orphan left behind.
+- Skill backups an earlier release left inside the skills root are moved out on the next install, so the duplicate-skill condition v2.0.1 described as fixed no longer survives an upgrade.
+- A skills root whose parent is not writable falls back to a temp directory for the backup instead of failing the install outright.
+- A symlinked skill destination is replaced with a real copy rather than reported as already current, so deleting the checkout it pointed at can no longer remove the installed skill.
+- The blank lines on both sides of a mid-file managed block are no longer merged into one extra blank line in the user's own prose.
+- A staging file left by a killed run is cleared at the start of the next install, so an uncatchable termination cannot leave a copy of the user's instructions in the project indefinitely.
+
+### Changed
+
+- `tests/install.sh` clears inherited `FABLE5_OPTIMIZER_*` variables. Without that, a stray `FABLE5_OPTIMIZER_SKILLS_DIR` combined with v2.0.1's out-of-root backup path let the suite move a developer's real `~/.claude/skills/fable5-optimizer` aside.
+- New coverage: marker text in prose, an unterminated block, a non-regular-file destination, symlink write-through for both `CLAUDE.md` and the skill folder, legacy backup migration, a backup on a content-changing rerun, and a `0604` fixture that no umask can produce, so the mode assertion cannot pass by accident.
+- `README.md` gives the correct backup path for the default home install and documents marker matching, symlink handling, and the mode policy.
+
 ## [2.0.1] - 2026-07-27
 
 ### Fixed
@@ -141,7 +163,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - One-shot installer (`install.sh`) with user and project modes.
 - CI validation of the skill package and public boundary.
 
-[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/nyldn/fable5-optimizer/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/nyldn/fable5-optimizer/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/nyldn/fable5-optimizer/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.6.0...v2.0.0
 [1.6.0]: https://github.com/nyldn/fable5-optimizer/compare/v1.5.1...v1.6.0

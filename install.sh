@@ -39,28 +39,50 @@ backup_path() {
 }
 
 # Backups of a skill folder must not land inside a skills root: Claude Code
-# discovers every directory that contains a SKILL.md, so a sibling backup
-# would register as a second skill with the same name.
-skill_backup_target() {
+# discovers every directory that contains a SKILL.md, so a sibling backup would
+# register as a second skill with the same name. Falls back to a temp directory
+# when the skills root's parent is not writable, which happens with
+# admin-managed skill locations.
+skill_backup_dir() {
   local dest="$1"
-  local skills_dir claude_dir
+  local skills_dir claude_dir candidate
   skills_dir="$(dirname "$dest")"
   claude_dir="$(dirname "$skills_dir")"
-  printf '%s\n' "$claude_dir/skill-backups/$(basename "$dest")"
-}
+  candidate="$claude_dir/skill-backups"
 
-# GNU stat first: on GNU, `-f` means --file-system and would print filesystem
-# details for the real path before failing, polluting the result. BSD stat
-# rejects `-c` outright with no output, so this order is safe on both.
-file_mode() {
-  local mode
-  if mode="$(stat -c '%a' "$1" 2>/dev/null)"; then
-    printf '%s\n' "$mode"
+  if mkdir -p "$candidate" 2>/dev/null; then
+    printf '%s\n' "$candidate"
     return 0
   fi
-  stat -f '%Lp' "$1" 2>/dev/null
+
+  candidate="$(mktemp -d "${TMPDIR:-/tmp}/fable5-optimizer-skill-backup.XXXXXX")"
+  printf '%s\n' "$candidate"
 }
 
+# v2.0.0 wrote skill backups as siblings inside the skills root, where Claude
+# Code still discovers them. Move any that a previous install left behind.
+migrate_legacy_skill_backups() {
+  local dest="$1"
+  local legacy target backup_dir
+
+  shopt -s nullglob
+  local matches=("$dest".backup.*)
+  shopt -u nullglob
+
+  [[ "${#matches[@]}" -gt 0 ]] || return 0
+
+  backup_dir="$(skill_backup_dir "$dest")"
+  for legacy in "${matches[@]}"; do
+    target="$(backup_path "$backup_dir/$(basename "$dest")")"
+    mv "$legacy" "$target"
+    echo "Moved a legacy in-root skill backup to $target"
+  done
+}
+
+# The installer always writes CLAUDE.md with the invoking user's umask default.
+# Preserving the destination's existing mode sounds safer but perpetuates the
+# 0600 that v2.0.0 left behind, and reading the mode of a symlink reports the
+# link's own bits rather than the target's.
 default_file_mode() {
   printf '%o\n' "$(( 0666 & ~8#$(umask) ))"
 }
@@ -87,15 +109,19 @@ copy_skill() {
   local dest="$2"
 
   COPY_SKILL_CHANGED=0
-  if [[ -d "$dest" ]] && diff -rq "$src" "$dest" >/dev/null 2>&1; then
+  migrate_legacy_skill_backups "$dest"
+
+  # A symlinked destination is never "already current": the caller asked for a
+  # detached copy, and leaving the link means deleting the checkout it points at
+  # would silently remove the installed skill.
+  if [[ ! -L "$dest" && -d "$dest" ]] && diff -rq "$src" "$dest" >/dev/null 2>&1; then
     return 0
   fi
   COPY_SKILL_CHANGED=1
 
-  if [[ -e "$dest" ]]; then
+  if [[ -e "$dest" || -L "$dest" ]]; then
     local backup
-    backup="$(backup_path "$(skill_backup_target "$dest")")"
-    mkdir -p "$(dirname "$backup")"
+    backup="$(backup_path "$(skill_backup_dir "$dest")/$(basename "$dest")")"
     mv "$dest" "$backup"
     echo "Backed up existing skill to $backup"
   fi
@@ -137,32 +163,78 @@ install_project_skill() {
   fi
 }
 
-install_claude_md() {
+claude_md_path() {
   local target_dir="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
-  local dest="${FABLE5_OPTIMIZER_CLAUDE_MD:-$target_dir/.claude/CLAUDE.md}"
-  local dest_dir mode
+  printf '%s\n' "${FABLE5_OPTIMIZER_CLAUDE_MD:-$target_dir/.claude/CLAUDE.md}"
+}
 
+# Echo the file with the managed block and any trailing blank lines removed, so
+# rerunning the installer reproduces the same bytes instead of growing a blank
+# line. Markers must match a whole line: the marker text also appears in prose
+# documenting this mechanism, and treating that as a block opener would discard
+# everything after it. Exits 3 on a block that is opened and never closed,
+# rather than silently truncating the file.
+strip_managed_block() {
+  awk \
+    -v start_re='^[[:space:]]*<!-- fable5-optimizer:start -->[[:space:]]*$' \
+    -v end_re='^[[:space:]]*<!-- fable5-optimizer:end -->[[:space:]]*$' '
+    $0 ~ start_re { skip = 1; count = 0; next }
+    $0 ~ end_re && skip { skip = 0; next }
+    skip { next }
+    /^[[:space:]]*$/ { pending[count++] = $0; next }
+    {
+      for (i = 0; i < count; i++) print pending[i]
+      count = 0
+      print
+    }
+    END { if (skip) exit 3 }
+  ' "$1"
+}
+
+unterminated_block_error() {
+  echo "Refusing to install: $1 opens a fable5-optimizer block that is never closed." >&2
+  echo "Repair or remove the managed block by hand, then rerun." >&2
+  exit 1
+}
+
+# Run before any other install step so a rejected destination does not leave a
+# half-finished install behind. Only a regular file, or a symlink to one, can
+# hold the policy block; without this check a directory at the destination
+# silently absorbs the staging file and the installer reports success with
+# nothing installed.
+validate_claude_md_dest() {
+  local dest
+  dest="$(claude_md_path)"
+
+  if [[ -e "$dest" && ! -f "$dest" ]]; then
+    echo "Refusing to install: $dest exists and is not a regular file." >&2
+    exit 1
+  fi
+
+  if [[ -f "$dest" ]] && ! strip_managed_block "$dest" >/dev/null; then
+    unterminated_block_error "$dest"
+  fi
+}
+
+install_claude_md() {
+  local dest dest_dir
+
+  dest="$(claude_md_path)"
   dest_dir="$(dirname "$dest")"
   mkdir -p "$dest_dir"
+  validate_claude_md_dest
+
+  # Clear any staging file a previously killed run left behind, so an
+  # uncatchable termination cannot leave a stray copy of the user's
+  # instructions in the project indefinitely.
+  rm -f "$dest_dir"/.fable5-optimizer-claude.* 2>/dev/null || true
 
   # Stage in the destination directory so the final move is atomic and never
   # crosses a filesystem boundary.
   TMP_FILE="$(mktemp "$dest_dir/.fable5-optimizer-claude.XXXXXX")"
 
-  if [[ -f "$dest" ]]; then
-    # Drop the managed block plus any trailing blank lines, so rerunning the
-    # installer reproduces the same bytes instead of growing a blank line.
-    awk '
-      /<!-- fable5-optimizer:start -->/ { skip = 1; next }
-      /<!-- fable5-optimizer:end -->/ { skip = 0; next }
-      skip { next }
-      /^[[:space:]]*$/ { pending[count++] = $0; next }
-      {
-        for (i = 0; i < count; i++) print pending[i]
-        count = 0
-        print
-      }
-    ' "$dest" > "$TMP_FILE"
+  if [[ -f "$dest" ]] && ! strip_managed_block "$dest" > "$TMP_FILE"; then
+    unterminated_block_error "$dest"
   fi
 
   if [[ -s "$TMP_FILE" ]]; then
@@ -173,6 +245,11 @@ install_claude_md() {
   if [[ -f "$dest" ]] && cmp -s "$TMP_FILE" "$dest"; then
     rm -f "$TMP_FILE"
     TMP_FILE=""
+    # The content can already match while the mode is still wrong, which is
+    # exactly the state v2.0.0 left behind.
+    if [[ ! -L "$dest" ]]; then
+      chmod "$(default_file_mode)" "$dest"
+    fi
     echo "Always-on $SKILL_NAME policy already current at $dest"
     return 0
   fi
@@ -180,15 +257,21 @@ install_claude_md() {
   if [[ -f "$dest" ]]; then
     local backup
     backup="$(backup_path "$dest")"
-    cp -p "$dest" "$backup"
+    cp "$dest" "$backup"
     echo "Backed up existing CLAUDE.md to $backup"
-    mode="$(file_mode "$dest")"
   fi
 
-  # mktemp creates 0600; restore the previous mode, or the umask default for a
-  # new file, so an installed CLAUDE.md stays readable like any other repo file.
-  chmod "${mode:-$(default_file_mode)}" "$TMP_FILE"
-  mv "$TMP_FILE" "$dest"
+  if [[ -L "$dest" ]]; then
+    # Write through the link so a dotfiles-managed CLAUDE.md keeps its
+    # indirection and the real target keeps its own mode.
+    cat "$TMP_FILE" > "$dest"
+    rm -f "$TMP_FILE"
+  else
+    # mktemp creates 0600; use the umask default so an installed CLAUDE.md is
+    # readable like any other file this user writes.
+    chmod "$(default_file_mode)" "$TMP_FILE"
+    mv "$TMP_FILE" "$dest"
+  fi
   TMP_FILE=""
   echo "Installed always-on $SKILL_NAME policy to $dest"
 }
@@ -211,6 +294,9 @@ case "$MODE" in
 
   claude-md|always-on)
     TARGET_DIR="${FABLE5_OPTIMIZER_TARGET:-$PWD}"
+    # Reject a bad CLAUDE.md destination before touching anything else, so a
+    # refusal never leaves a half-finished install behind.
+    validate_claude_md_dest
     install_project_skill "$TARGET_DIR"
     install_claude_md
     ;;
