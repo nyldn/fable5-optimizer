@@ -43,7 +43,7 @@ From a cloned copy:
 ./install.sh
 ```
 
-The default install writes to `~/.claude/skills/fable5-optimizer`. Existing skill folders are backed up before replacement.
+The default install writes to `~/.claude/skills/fable5-optimizer`. A changed skill folder is backed up to `.claude/skill-backups/` before replacement, which keeps the copy out of the skills root Claude Code scans. Reinstalling an unchanged version does nothing and leaves no backup.
 
 For a project-local install:
 
@@ -70,7 +70,7 @@ This mode:
 1. installs the detailed skill to `.claude/skills/fable5-optimizer/`
 2. writes a managed routing block to `.claude/CLAUDE.md`
 
-The managed block is intentionally lightweight. Re-running the installer replaces the block rather than stacking copies, preserves unrelated project instructions, and backs up existing files first.
+The managed block is intentionally lightweight. Re-running the installer replaces the block rather than stacking copies, preserves unrelated project instructions, and backs up existing files first. When nothing would change, the rerun is a byte-for-byte no-op and writes no backup.
 
 ## Default Routing
 
@@ -115,7 +115,7 @@ The current policy is grounded in:
 - Anthropic's [Claude model selection guide](https://platform.claude.com/docs/en/about-claude/models/choosing-a-model)
 - Anthropic's [Opus 5 prompting guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)
 - Anthropic's [Claude 5 context-engineering guidance](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
-- Anthropic's [Claude Code skills guide](https://code.claude.com/docs/en/slash-commands)
+- Anthropic's [Claude Code skills guide](https://code.claude.com/docs/en/skills)
 - OpenAI's [reasoning-model guidance](https://developers.openai.com/api/docs/guides/reasoning)
 - OpenAI's [Codex sandbox documentation](https://learn.chatgpt.com/docs/sandboxing)
 
